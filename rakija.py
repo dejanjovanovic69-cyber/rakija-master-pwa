@@ -18,7 +18,7 @@ if datetime.now() > DATUM_ISTEKA:
     st.error("PROBNI PERIOD ISTEKAO")
     st.stop()
 
-# --- 2. ČUVANJE PODATAKA (DNEVNIK) ---
+# --- 2. ČUVANJE PODATAKA ---
 FILE_PATH = "dnevnik_podaci.json"
 
 def ucitaj_podatke():
@@ -34,7 +34,7 @@ def sacuvaj_podatke(lista):
     with open(FILE_PATH, "w", encoding="utf-8") as f:
         json.dump(lista, f, indent=4, ensure_ascii=False)
 
-# --- 3. INICIJALIZACIJA SESIJE ---
+# --- 3. SESIJA ---
 if "stranica" not in st.session_state:
     st.session_state.stranica = "pocetna"
 if "theme_mode" not in st.session_state:
@@ -54,28 +54,48 @@ else:
     TXT = "black"
     CARD = "white"
 
-# === NAJJAČI CSS ===
+# === NAJJAČI CSS ZA STREAMLIT CLOUD ===
 st.markdown(f"""
 <style>
-    [data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stAppDeployButton"], 
-    .stDeployButton, [data-testid="stStatusWidget"], footer, [data-testid="stFooter"], 
-    #MainMenu, [data-testid="stDecoration"], button[title="View app in new tab"],
-    div[class*="Hosted"], div[style*="Hosted with Streamlit"] {{
+    [data-testid="stHeader"],
+    [data-testid="stToolbar"],
+    [data-testid="stAppDeployButton"],
+    .stDeployButton,
+    [data-testid="stStatusWidget"],
+    footer,
+    [data-testid="stFooter"],
+    #MainMenu,
+    [data-testid="stDecoration"],
+    button[title="View app in new tab"] {{
         display: none !important;
         visibility: hidden !important;
         height: 0 !important;
-        min-height: 0 !important;
-        max-height: 0 !important;
+    }}
+
+    /* NAJJAČE Uklanjanje "Hosted with Streamlit" badge-a na Cloud-u */
+    div[data-testid="stAppViewContainer"] > div > div > div > div:nth-child(2),
+    div[class*="Hosted"],
+    div[style*="Hosted with Streamlit"],
+    .st-emotion-cache-1r4qjyz,
+    .st-emotion-cache-13ln4jf,
+    .st-emotion-cache-1g8v9l4,
+    .st-emotion-cache-1rs6os,
+    .css-1v3fvcr,
+    div[style*="position: fixed"],
+    div[style*="bottom"] div[style*="right"] {{
+        display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+        min-height: 0px !important;
+        max-height: 0px !important;
         overflow: hidden !important;
+        position: absolute !important;
+        left: -9999px !important;
     }}
-    .stApp {{
-        background-color: {BG} !important;
-    }}
-    .block-container {{
-        padding-top: 0.5rem !important;
-        padding-bottom: 4rem !important;
-        max-width: 520px !important;
-    }}
+
+    .stApp {{ background-color: {BG} !important; }}
+    .block-container {{ padding-top: 0.5rem !important; padding-bottom: 4rem !important; max-width: 520px !important; }}
+
     .flet-header {{
         background-color: {GOLD};
         padding: 20px;
@@ -84,12 +104,8 @@ st.markdown(f"""
         box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
         margin-bottom: 20px;
     }}
-    .flet-title {{
-        color: white;
-        font-size: 24px;
-        font-weight: 900;
-        margin: 0;
-    }}
+    .flet-title {{ color: white; font-size: 24px; font-weight: 900; margin: 0; }}
+
     div.stButton > button {{
         background-color: {CARD} !important;
         color: {GOLD} !important;
@@ -99,26 +115,11 @@ st.markdown(f"""
         font-weight: bold !important;
         font-size: 16px !important;
     }}
-    div.stButton > button:hover {{
-        background-color: {GOLD} !important;
-        color: {BG} !important;
-    }}
-    div.stButton > button[data-testid="baseButton-primary"] {{
-        background-color: {GOLD} !important;
-        color: black !important;
-    }}
-    label p, label div {{
-        color: {GOLD} !important;
-        font-weight: bold !important;
-    }}
-    .section-label {{
-        color: {GOLD};
-        font-size: 14px;
-        font-weight: bold;
-        margin-top: 20px;
-        margin-bottom: 10px;
-        text-transform: uppercase;
-    }}
+    div.stButton > button:hover {{ background-color: {GOLD} !important; color: {BG} !important; }}
+    div.stButton > button[data-testid="baseButton-primary"] {{ background-color: {GOLD} !important; color: black !important; }}
+
+    label p, label div {{ color: {GOLD} !important; font-weight: bold !important; }}
+    .section-label {{ color: {GOLD}; font-size: 14px; font-weight: bold; margin-top: 20px; margin-bottom: 10px; text-transform: uppercase; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -138,10 +139,7 @@ def get_base64_img(path):
 # ==========================================
 if st.session_state.stranica == "pocetna":
     img_b64 = get_base64_img("kazan.png")
-    slika_html = (
-        f'<img src="data:image/png;base64,{img_b64}" width="120" style="margin-top:10px;" />'
-        if img_b64 else '<div style="font-size:60px;">⚗️</div>'
-    )
+    slika_html = f'<img src="data:image/png;base64,{img_b64}" width="120" style="margin-top:10px;" />' if img_b64 else '<div style="font-size:60px;">⚗️</div>'
     ikona_teme = "☀️" if st.session_state.theme_mode == "dark" else "🌙"
 
     st.markdown(f"""
@@ -157,36 +155,36 @@ if st.session_state.stranica == "pocetna":
 
     st.markdown('<p class="section-label">🟢 UKOMLJAVANJE</p>', unsafe_allow_html=True)
     c1, c2 = st.columns(2)
-    with c1:
+    with c1: 
         if st.button("🍇 Komina", use_container_width=True): idi_na("komina")
-    with c2:
+    with c2: 
         if st.button("🦠 Kvasci", use_container_width=True): idi_na("kvasci")
 
     st.markdown('<p class="section-label">🔥 DESTILACIJA</p>', unsafe_allow_html=True)
     c3, c4 = st.columns(2)
-    with c3:
+    with c3: 
         if st.button("✂️ Prvenac", use_container_width=True): idi_na("prvenac")
-    with c4:
+    with c4: 
         if st.button("🏁 Patoka", use_container_width=True): idi_na("patoka")
 
     c5, c6 = st.columns(2)
-    with c5:
+    with c5: 
         if st.button("💧 Razblaživanje", use_container_width=True): idi_na("razblazivanje")
-    with c6:
+    with c6: 
         if st.button("🌡️ Temperatura", use_container_width=True): idi_na("temperatura")
 
     st.markdown('<p class="section-label">⚖️ KUPAŽA I ODLEŽAVANJE</p>', unsafe_allow_html=True)
     c7, c8 = st.columns(2)
-    with c7:
+    with c7: 
         if st.button("⚖️ Kupaža", use_container_width=True): idi_na("kupaza")
-    with c8:
+    with c8: 
         if st.button("🪵 Bure", use_container_width=True): idi_na("bure")
 
     st.markdown('<p class="section-label">📖 ARHIVA I LINKOVI</p>', unsafe_allow_html=True)
     c9, c10 = st.columns(2)
-    with c9:
+    with c9: 
         if st.button("📖 Dnevnik", use_container_width=True): idi_na("dnevnik")
-    with c10:
+    with c10: 
         if st.button("🔗 Linkovi", use_container_width=True): idi_na("linkovi")
 
 # ==========================================
@@ -240,11 +238,7 @@ else:
         naslov_alata("🏁 PATOKA", "Trenutak kada se prekida hvatanje srca rakije.")
         v = st.selectbox("Voće", ["Šljiva", "Dunja", "Jabuka"])
         if st.button("SAVET", type="primary", use_container_width=True):
-            s = {
-                "Šljiva": "Prekidaj na 40-45% na luli.",
-                "Dunja": "Prekidaj na 45-50% na luli.",
-                "Jabuka": "Prekidaj na oko 42%."
-            }
+            s = {"Šljiva": "Prekidaj na 40-45% na luli.", "Dunja": "Prekidaj na 45-50% na luli.", "Jabuka": "Prekidaj na oko 42%."}
             st.info(s[v])
 
     elif st.session_state.stranica == "kupaza":
@@ -282,10 +276,7 @@ else:
         with c6: f_j = st.text_input("Jačina %", "42")
         if st.button("SAČUVAJ U ARHIVU", type="primary", use_container_width=True):
             if f_i:
-                st.session_state.dnevnik.append({
-                    "ime": f_i, "godina": f_g, "kg": f_k,
-                    "datum": f_dat, "litara": f_l, "jacina": f_j
-                })
+                st.session_state.dnevnik.append({"ime": f_i, "godina": f_g, "kg": f_k, "datum": f_dat, "litara": f_l, "jacina": f_j})
                 sacuvaj_podatke(st.session_state.dnevnik)
                 st.rerun()
         st.divider()
@@ -313,8 +304,7 @@ else:
         def link_dugme(tekst, ikona, url):
             st.markdown(f'''
             <a href="{url}" target="_blank" style="text-decoration:none;">
-                <div style="background-color:{GOLD}; color:black; padding:15px; border-radius:10px; 
-                display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px; font-weight:bold;">
+                <div style="background-color:{GOLD}; color:black; padding:15px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px; font-weight:bold;">
                     <span style="font-size:24px;">{ikona}</span>
                     <span style="font-size:16px;">{tekst}</span>
                 </div>
