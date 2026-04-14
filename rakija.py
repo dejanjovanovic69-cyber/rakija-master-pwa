@@ -50,27 +50,24 @@ else:
 st.markdown(f"""
     <style>
     /* =========================================
-       ULTIMATIVNO BRISANJE STREAMLIT IKONICA
+       TOTALNO BRISANJE SVIH STREAMLIT IKONICA
        ========================================= */
     
-    /* 1. Gornji desni ugao (Deploy, GitHub, tri tačkice) */
+    /* 1. Sakrivanje celog gornjeg menija (Deploy, GitHub, tri tačkice) */
     [data-testid="stHeader"] {{ display: none !important; }}
-    [data-testid="stToolbar"] {{ display: none !important; }}
-    header {{ display: none !important; }}
     
-    /* 2. Donji desni ugao ("Manage app" i Streamlit logo) - NAJNOVIJI STREAMLIT KOD */
-    iframe[title="Manage app"] {{ 
-        display: none !important; 
-        opacity: 0 !important; 
-        pointer-events: none !important; 
-        position: absolute !important; 
-        top: -9999px !important; 
-    }}
-    iframe[src*="manage"] {{ display: none !important; }}
-    div[class*="viewerBadge"] {{ display: none !important; }}
+    /* 2. Sakrivanje ikonice za otvaranje sajd-bara (gore levo) */
+    [data-testid="collapsedControl"] {{ display: none !important; }}
     
-    /* 3. Sakrivanje footera */
-    [data-testid="stFooter"] {{ display: none !important; }}
+    /* 3. Sakrivanje "Manage App" i "Hosted with Streamlit" bedževa (dole desno) */
+    [class*="viewerBadge"] {{ display: none !important; }}
+    
+    /* 4. BRUTALNA METODA: Sakrivanje apsolutno svakog linka i slike koji vode na Streamlit ili GitHub */
+    a[href*="streamlit"] {{ display: none !important; pointer-events: none !important; visibility: hidden !important; }}
+    img[src*="streamlit"] {{ display: none !important; pointer-events: none !important; visibility: hidden !important; }}
+    a[href*="github.com"] {{ display: none !important; pointer-events: none !important; visibility: hidden !important; }}
+    
+    /* 5. Sakrivanje footera */[data-testid="stFooter"] {{ display: none !important; }}
     footer {{ display: none !important; }}
 
     /* Globalno */
