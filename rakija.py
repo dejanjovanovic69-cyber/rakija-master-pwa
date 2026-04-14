@@ -18,7 +18,7 @@ if datetime.now() > DATUM_ISTEKA:
     st.error("PROBNI PERIOD ISTEKAO")
     st.stop()
 
-# --- 2. ČUVANJE PODATAKA ---
+# --- 2. ČUVANJE PODATAKA (DNEVNIK) ---
 FILE_PATH = "dnevnik_podaci.json"
 
 def ucitaj_podatke():
@@ -34,7 +34,7 @@ def sacuvaj_podatke(lista):
     with open(FILE_PATH, "w", encoding="utf-8") as f:
         json.dump(lista, f, indent=4, ensure_ascii=False)
 
-# --- 3. SESIJA ---
+# --- 3. INICIJALIZACIJA SESIJE ---
 if "stranica" not in st.session_state:
     st.session_state.stranica = "pocetna"
 if "theme_mode" not in st.session_state:
@@ -57,41 +57,17 @@ else:
 # === NAJJAČI CSS ===
 st.markdown(f"""
 <style>
-    [data-testid="stHeader"],
-    [data-testid="stToolbar"],
-    [data-testid="stAppDeployButton"],
-    .stDeployButton,
-    [data-testid="stStatusWidget"],
-    footer,
-    [data-testid="stFooter"],
-    #MainMenu,
-    [data-testid="stDecoration"],
-    button[title="View app in new tab"] {{
+    [data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stAppDeployButton"], 
+    .stDeployButton, [data-testid="stStatusWidget"], footer, [data-testid="stFooter"], 
+    #MainMenu, [data-testid="stDecoration"], button[title="View app in new tab"],
+    div[class*="Hosted"], div[style*="Hosted with Streamlit"] {{
         display: none !important;
         visibility: hidden !important;
         height: 0 !important;
         min-height: 0 !important;
-    }}
-
-    /* Najjače uklanjanje "Hosted with Streamlit" badge-a */
-    div[data-testid="stAppViewContainer"] > div > div > div > div:nth-child(2),
-    .st-emotion-cache-1r4qjyz,
-    .st-emotion-cache-13ln4jf,
-    .st-emotion-cache-1g8v9l4,
-    .st-emotion-cache-1rs6os,
-    div[class*="Hosted"],
-    div[style*="Hosted with Streamlit"],
-    div[style*="bottom:"] div[style*="right:"],
-    .css-1v3fvcr {{
-        display: none !important;
-        visibility: hidden !important;
-        height: 0px !important;
-        width: 0px !important;
+        max-height: 0 !important;
         overflow: hidden !important;
-        position: absolute !important;
-        left: -9999px !important;
     }}
-
     .stApp {{
         background-color: {BG} !important;
     }}
@@ -100,7 +76,6 @@ st.markdown(f"""
         padding-bottom: 4rem !important;
         max-width: 520px !important;
     }}
-
     .flet-header {{
         background-color: {GOLD};
         padding: 20px;
@@ -115,7 +90,6 @@ st.markdown(f"""
         font-weight: 900;
         margin: 0;
     }}
-
     div.stButton > button {{
         background-color: {CARD} !important;
         color: {GOLD} !important;
@@ -133,7 +107,6 @@ st.markdown(f"""
         background-color: {GOLD} !important;
         color: black !important;
     }}
-
     label p, label div {{
         color: {GOLD} !important;
         font-weight: bold !important;
@@ -185,46 +158,36 @@ if st.session_state.stranica == "pocetna":
     st.markdown('<p class="section-label">🟢 UKOMLJAVANJE</p>', unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     with c1:
-        if st.button("🍇 Komina", use_container_width=True):
-            idi_na("komina")
+        if st.button("🍇 Komina", use_container_width=True): idi_na("komina")
     with c2:
-        if st.button("🦠 Kvasci", use_container_width=True):
-            idi_na("kvasci")
+        if st.button("🦠 Kvasci", use_container_width=True): idi_na("kvasci")
 
     st.markdown('<p class="section-label">🔥 DESTILACIJA</p>', unsafe_allow_html=True)
     c3, c4 = st.columns(2)
     with c3:
-        if st.button("✂️ Prvenac", use_container_width=True):
-            idi_na("prvenac")
+        if st.button("✂️ Prvenac", use_container_width=True): idi_na("prvenac")
     with c4:
-        if st.button("🏁 Patoka", use_container_width=True):
-            idi_na("patoka")
+        if st.button("🏁 Patoka", use_container_width=True): idi_na("patoka")
 
     c5, c6 = st.columns(2)
     with c5:
-        if st.button("💧 Razblaživanje", use_container_width=True):
-            idi_na("razblazivanje")
+        if st.button("💧 Razblaživanje", use_container_width=True): idi_na("razblazivanje")
     with c6:
-        if st.button("🌡️ Temperatura", use_container_width=True):
-            idi_na("temperatura")
+        if st.button("🌡️ Temperatura", use_container_width=True): idi_na("temperatura")
 
     st.markdown('<p class="section-label">⚖️ KUPAŽA I ODLEŽAVANJE</p>', unsafe_allow_html=True)
     c7, c8 = st.columns(2)
     with c7:
-        if st.button("⚖️ Kupaža", use_container_width=True):
-            idi_na("kupaza")
+        if st.button("⚖️ Kupaža", use_container_width=True): idi_na("kupaza")
     with c8:
-        if st.button("🪵 Bure", use_container_width=True):
-            idi_na("bure")
+        if st.button("🪵 Bure", use_container_width=True): idi_na("bure")
 
     st.markdown('<p class="section-label">📖 ARHIVA I LINKOVI</p>', unsafe_allow_html=True)
     c9, c10 = st.columns(2)
     with c9:
-        if st.button("📖 Dnevnik", use_container_width=True):
-            idi_na("dnevnik")
+        if st.button("📖 Dnevnik", use_container_width=True): idi_na("dnevnik")
     with c10:
-        if st.button("🔗 Linkovi", use_container_width=True):
-            idi_na("linkovi")
+        if st.button("🔗 Linkovi", use_container_width=True): idi_na("linkovi")
 
 # ==========================================
 # OSTALE STRANICE
@@ -277,7 +240,11 @@ else:
         naslov_alata("🏁 PATOKA", "Trenutak kada se prekida hvatanje srca rakije.")
         v = st.selectbox("Voće", ["Šljiva", "Dunja", "Jabuka"])
         if st.button("SAVET", type="primary", use_container_width=True):
-            s = {"Šljiva": "Prekidaj na 40-45% na luli.", "Dunja": "Prekidaj na 45-50% na luli.", "Jabuka": "Prekidaj na oko 42%."}
+            s = {
+                "Šljiva": "Prekidaj na 40-45% na luli.",
+                "Dunja": "Prekidaj na 45-50% na luli.",
+                "Jabuka": "Prekidaj na oko 42%."
+            }
             st.info(s[v])
 
     elif st.session_state.stranica == "kupaza":
@@ -342,21 +309,26 @@ else:
             st.markdown("<br>", unsafe_allow_html=True)
 
     elif st.session_state.stranica == "linkovi":
-        naslov_alata("🔗 KORISNI LINKOVI")
+        naslov_alata("🔗 KORISNI LINKOVI", "Preporučeni sajtovi, prodavnice i udruženja.")
         def link_dugme(tekst, ikona, url):
             st.markdown(f'''
             <a href="{url}" target="_blank" style="text-decoration:none;">
                 <div style="background-color:{GOLD}; color:black; padding:15px; border-radius:10px; 
                 display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px; font-weight:bold;">
-                    <span style="font-size:24px;">{ikona}</span><span>{tekst}</span>
+                    <span style="font-size:24px;">{ikona}</span>
+                    <span style="font-size:16px;">{tekst}</span>
                 </div>
             </a>
             ''', unsafe_allow_html=True)
-        link_dugme("Knjiga: Rakijski kod", "📘", "https://www.facebook.com/rakijskikod/")
+        link_dugme("Knjiga: Rakijski kod", "📘", "https://www.facebook.com/rakijskikod/?locale=sr_RS")
         link_dugme("Rakija iz rakije", "🥂", "https://www.rakijaizrakije.com")
         link_dugme("Savez proizvođača rakija", "🤝", "https://savezrakija.rs")
         link_dugme("Rakija Shop", "🛒", "https://rakijashop.eu/srb/")
         link_dugme("Čiča Zlajina Rakija", "🏺", "https://cicazlajinarakija.rs")
+        
+        st.divider()
+        st.markdown(f"<p style='color:{GOLD}; font-size:18px; font-weight:bold;'>📅 DOGAĐAJI</p>", unsafe_allow_html=True)
+        link_dugme("18.04.2024. Hajdučki festival", "📍", "https://www.facebook.com/p/Хајдучки-фестивал-ракије-Богатић-Hajdučki-festival-rakije-Bogatić-61584019897579/")
 
     st.divider()
     if st.button("⬅ NAZAD NA MENI", use_container_width=True):
