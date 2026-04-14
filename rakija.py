@@ -11,22 +11,22 @@ st.set_page_config(page_title="Rakija Master Pro", page_icon="🥃", layout="cen
 if 'stranica' not in st.session_state:
     st.session_state.stranica = 'pocetna'
 if 'dnevnik' not in st.session_state:
-    st.session_state.dnevnik =[]
+    st.session_state.dnevnik = []
 
-# --- BRUTALAN CSS ZA ANDROID IZGLED (SA TEŠKOM ARTILJERIJOM ZA STREAMLIT) ---
+# --- BRUTALAN CSS ZA ANDROID IZGLED I SAKRIVANJE STREAMLIT IKONICA ---
 st.markdown("""
     <style>
-    /* TOTALNO SAKRIVANJE STREAMLIT BRENDINGA I MENIJA */
+    /* SAKRIVANJE SVIH STREAMLIT ELEMENATA (Fix za 2 ikonice na dnu) */
     #MainMenu {visibility: hidden !important; display: none !important;}
     header {visibility: hidden !important; display: none !important;}
-    [data-testid="stHeader"] {display: none !important;}[data-testid="stToolbar"] {display: none !important;}
-
-    /* SAKRIVANJE STREAMLIT FOOTER-A I BEDŽEVA NA DNU */
     footer {visibility: hidden !important; display: none !important;}
+    [data-testid="stHeader"] {display: none !important;}
+    [data-testid="stToolbar"] {display: none !important;}
     [data-testid="stFooter"] {display: none !important;}
+    [data-testid="manage-app-button"] {display: none !important;}
     .viewerBadge_container__1QSob {display: none !important;}
     .st-emotion-cache-1cvow4s {display: none !important;} 
-    div[data-testid="manage-app-button"] {display: none !important;}
+    .st-emotion-cache-zq5wms {display: none !important;}
     a[href^="https://streamlit.io"] {display: none !important; opacity: 0 !important; pointer-events: none !important;}
     
     /* Margine ekrana */
@@ -156,11 +156,9 @@ else:
     if st.session_state.stranica == 'secer':
         st.subheader("🍇 Konverter šećera")
         brix = st.slider("Izmeren šećer (% Brix):", min_value=0.0, max_value=30.0, value=12.0, step=0.5)
-        
         babo = brix * 0.85
         oechsle = brix * 4.25
         pot_alkohol = brix * 0.55
-        
         st.info(f"**Babo (KMW):** {babo:.1f}°\n\n**Oechsle:** {oechsle:.0f}°")
         st.success(f"**Potencijalni alkohol u komini:** oko {pot_alkohol:.1f} % vol")
 
@@ -168,11 +166,9 @@ else:
     elif st.session_state.stranica == 'kvasci':
         st.subheader("🦠 Kvasci, Enzimi i Hrana")
         voca_kg = st.number_input("Količina voća (kg):", min_value=10, value=100, step=10)
-        
         enzim = (voca_kg / 100) * 2
         kvasac = (voca_kg / 100) * 25
         hrana = (voca_kg / 100) * 25
-        
         st.warning(f"**Receptura za {voca_kg} kg komine:**")
         st.write(f"- **Enzimi (pektolitika):** {enzim:.1f} g")
         st.write(f"- **Selekcionisani kvasac:** {kvasac:.1f} g")
@@ -183,14 +179,9 @@ else:
         st.subheader("✂️ Odvajanje prvenca")
         voce = st.selectbox("Vrsta voća:",["Šljiva", "Kajsija / Breskva", "Dunja", "Jabuka / Kruška", "Grožđe (Loza)", "Ostalo"])
         meka = st.number_input("Meka rakija u kazanu (L):", min_value=1.0, value=100.0, step=5.0)
-        
-        if voce in["Kajsija / Breskva", "Dunja"]: 
-            proc = 0.015
-        elif voce == "Šljiva": 
-            proc = 0.008
-        else: 
-            proc = 0.010
-        
+        if voce in ["Kajsija / Breskva", "Dunja"]: proc = 0.015
+        elif voce == "Šljiva": proc = 0.008
+        else: proc = 0.010
         prvenac = meka * proc
         st.error(f"Preporučeno za odvajanje: **{prvenac:.2f} Litara** ({proc*100}%)")
         st.caption("Aplikacija daje procenu zasnovanu na prosečnoj količini pektina u voću. Konačan presek uvek radi na miris!")
@@ -200,8 +191,7 @@ else:
         st.subheader("🏁 Presek: Odvajanje Patoke")
         st.write("Trenutak kada prestaješ da hvataš srce rakije.")
         voce = st.selectbox("Vrsta voća u kazanu:",["Šljiva", "Kajsija / Breskva", "Dunja", "Jabuka / Kruška", "Grožđe (Loza)"])
-        
-        if voce in["Kajsija / Breskva", "Dunja"]:
+        if voce in ["Kajsija / Breskva", "Dunja"]:
             preporuka = "45% - 50%"
             opis = "Aromatično voće brzo gubi fine arome na luli i povlači kiselkaste patočne tonove. Reži ranije!"
         elif voce == "Šljiva":
@@ -213,10 +203,8 @@ else:
         else:
             preporuka = "35% - 40%"
             opis = "Loza podnosi malo dublje hvatanje, ali prati aromu."
-
         st.error(f"Kada jačina **NA LULI** padne na: **{preporuka} vol**")
         st.info(opis)
-        st.caption("💡 *Pro savet:* Pravilo majstora je da se patoka odvaja kada prosečna jačina u sudu dostigne željenu (npr. 60-65%), a na luli padne na gore preporučenu granicu.")
 
     # 5. RAZBLAŽIVANJE
     elif st.session_state.stranica == 'razblazivanje':
@@ -224,7 +212,6 @@ else:
         v_r = st.number_input("Količina rakije (L):", min_value=0.5, value=10.0, step=0.5)
         j1 = st.slider("Trenutna jačina (%):", min_value=20.0, max_value=80.0, value=65.0, step=0.5)
         j2 = st.slider("Željena jačina (%):", min_value=20.0, max_value=60.0, value=42.0, step=0.5)
-        
         if j1 <= j2:
             st.error("Željena jačina mora biti manja od trenutne!")
         else:
@@ -236,15 +223,12 @@ else:
         st.subheader("🌡️ Korekcija temperature")
         izm = st.slider("Očitana jačina na alkoholmetru (%):", 10.0, 80.0, 45.0, 0.5)
         temp = st.slider("Temperatura destilata (°C):", 0.0, 40.0, 25.0, 1.0)
-        
         stvarna = izm - ((temp - 20) * 0.3) if temp > 20 else izm + ((20 - temp) * 0.3)
         st.warning(f"Stvarna jačina (na 20°C): **{stvarna:.1f} % vol**")
-        st.caption("Napomena: Prikazana je matematička aproksimacija (veoma tačna za kućne potrebe).")
 
     # 7. KUPAŽIRANJE
     elif st.session_state.stranica == 'kupaza':
         st.subheader("⚖️ Kupažiranje (Mešanje)")
-        
         col1, col2 = st.columns(2)
         with col1:
             v1 = st.number_input("Rakija 1 (L):", value=10.0, step=1.0)
@@ -252,7 +236,6 @@ else:
         with col2:
             v2 = st.number_input("Rakija 2 (L):", value=5.0, step=1.0)
             j2 = st.number_input("Jačina 2 (%):", value=40.0, step=1.0)
-            
         if (v1+v2) > 0:
             j_nova = ((v1 * j1) + (v2 * j2)) / (v1 + v2)
             st.success(f"Dobijaš **{v1+v2} L** rakije jačine **{j_nova:.1f} % vol**")
@@ -260,11 +243,9 @@ else:
     # 8. ZAPREMINA BURETA
     elif st.session_state.stranica == 'bure':
         st.subheader("🪵 Zapremina Drvenog Bureta")
-        
         h = st.slider("Visina bureta / Dužina duga (cm):", 20.0, 150.0, 70.0, 1.0)
         d_sredina = st.number_input("Prečnik na najširem delu (cm):", value=60.0, step=1.0)
         d_kraj = st.number_input("Prečnik na dnu/vrhu (cm):", value=50.0, step=1.0)
-        
         if st.button("IZRAČUNAJ ZAPREMINU", use_container_width=True):
             v_litri = (math.pi * h / 12 * (2 * d_sredina**2 + d_kraj**2)) / 1000
             st.success(f"Zapremina bureta je približno: **{v_litri:.1f} Litara**")
@@ -272,27 +253,19 @@ else:
     # 9. DNEVNIK
     elif st.session_state.stranica == 'dnevnik':
         st.subheader("📖 Digitalni Dnevnik")
-        
         with st.expander("➕ Dodaj novi unos", expanded=True):
             ime = st.text_input("Naziv serije (npr. Kajsija 2026):")
             kg = st.number_input("Količina voća (kg):", value=500)
             dobijeno = st.number_input("Dobijeno litara:", value=45.0)
             jacina = st.number_input("Jačina (%):", value=42.0)
-            
             if st.button("💾 SAČUVAJ U DNEVNIK", use_container_width=True):
                 if ime:
-                    unos = {
-                        "datum": datetime.now().strftime("%d.%m.%Y"),
-                        "ime": ime, "kg": kg, "litara": dobijeno, "jacina": jacina
-                    }
+                    unos = {"datum": datetime.now().strftime("%d.%m.%Y"), "ime": ime, "kg": kg, "litara": dobijeno, "jacina": jacina}
                     st.session_state.dnevnik.append(unos)
                     st.success("Uspešno sačuvano!")
-                else:
-                    st.error("Unesi naziv serije.")
-
+                else: st.error("Unesi naziv serije.")
         st.write("### 🗄️ Arhiva")
-        if len(st.session_state.dnevnik) == 0:
-            st.caption("Dnevnik je prazan. Dodaj svoj prvi kazan!")
+        if len(st.session_state.dnevnik) == 0: st.caption("Dnevnik je prazan.")
         else:
             for item in reversed(st.session_state.dnevnik):
                 st.markdown(f"""
