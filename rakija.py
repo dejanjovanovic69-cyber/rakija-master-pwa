@@ -1,279 +1,293 @@
-import streamlit as st
-from datetime import datetime
+import flet as ft
 import math
-import base64
+import json
 import os
+from datetime import datetime
 
-# --- KONFIGURACIJA ---
-st.set_page_config(page_title="Rakija Master Pro", page_icon="🥃", layout="centered")
+# --- KONFIGURACIJA BOJA ---
+GOLD_DARK = "#D4AF37"
+GOLD_LIGHT = "#996515"
+FILE_PATH = "dnevnik_podaci.json"
 
-# --- INICIJALIZACIJA SESIJE (NAVIGACIJA I DNEVNIK) ---
-if 'stranica' not in st.session_state:
-    st.session_state.stranica = 'pocetna'
-if 'dnevnik' not in st.session_state:
-    st.session_state.dnevnik = []
-
-# --- BRUTALAN CSS ZA ANDROID IZGLED I SAKRIVANJE STREAMLIT IKONICA ---
-st.markdown("""
-    <style>
-    /* SAKRIVANJE SVIH STREAMLIT ELEMENATA (Fix za 2 ikonice na dnu) */
-    #MainMenu {visibility: hidden !important; display: none !important;}
-    header {visibility: hidden !important; display: none !important;}
-    footer {visibility: hidden !important; display: none !important;}
-    [data-testid="stHeader"] {display: none !important;}
-    [data-testid="stToolbar"] {display: none !important;}
-    [data-testid="stFooter"] {display: none !important;}
-    [data-testid="manage-app-button"] {display: none !important;}
-    .viewerBadge_container__1QSob {display: none !important;}
-    .st-emotion-cache-1cvow4s {display: none !important;} 
-    .st-emotion-cache-zq5wms {display: none !important;}
-    a[href^="https://streamlit.io"] {display: none !important; opacity: 0 !important; pointer-events: none !important;}
+def main(page: ft.Page):
+    page.title = "Rakija Master Pro"
+    page.theme_mode = "dark"
+    page.padding = 0
+    page.window_width = 400
+    page.window_height = 800
     
-    /* Margine ekrana */
-    .block-container { padding-top: 1rem; padding-bottom: 5rem; }
-    
-    /* Tamna tema */
-    .stApp { background-color: #121212; color: #ffffff; }
+    # --- ČUVANJE PODATAKA ---
+    def ucitaj_podatke():
+        if os.path.exists(FILE_PATH):
+            try:
+                with open(FILE_PATH, "r", encoding="utf-8") as f: return json.load(f)
+            except: return []
+        return []
 
-    /* Naslovni blok */
-    .header-box {
-        text-align: center;
-        padding: 40px 10px 20px 10px;
-        background: linear-gradient(to bottom, #D4AF37, #8B6E02);
-        margin: -20px -20px 20px -20px;
-        border-radius: 0 0 40px 40px;
-        box-shadow: 0px 5px 15px rgba(0,0,0,0.5);
-    }
-    
-    /* Dizajn dugmića */
-    div[data-testid="stButton"] > button {
-        background: linear-gradient(145deg, #1e1e1e, #2a2a2a) !important;
-        color: #D4AF37 !important;
-        border: 1px solid #444 !important;
-        border-radius: 15px !important;
-        height: 80px !important;
-        font-size: 16px !important;
-        font-weight: bold !important;
-        box-shadow: 3px 3px 10px rgba(0,0,0,0.3) !important;
-        transition: 0.2s !important;
-    }
-    div[data-testid="stButton"] > button:active {
-        transform: scale(0.95) !important;
-        background: #D4AF37 !important;
-        color: #121212 !important;
-    }
-    
-    /* Dugme za NAZAD */
-    .btn-nazad div[data-testid="stButton"] > button {
-        height: 50px !important;
-        background: transparent !important;
-        border: 1px solid #D4AF37 !important;
-        color: white !important;
-        font-size: 14px !important;
-    }
+    def sacuvaj_podatke(lista):
+        with open(FILE_PATH, "w", encoding="utf-8") as f: 
+            json.dump(lista, f, indent=4, ensure_ascii=False)
 
-    label, .stMarkdown p { color: #eeeeee !important; }
-    div[data-baseweb="slider"] { margin-bottom: 20px; }
-    
-    /* Input polja */
-    div[data-baseweb="input"], div[data-baseweb="select"] > div {
-        background-color: #1e1e1e !important;
-        border-radius: 10px !important;
-        color: white !important;
-        border: 1px solid #333 !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    page.dnevnik = ucitaj_podatke()
 
-# --- FUNKCIJE NAVIGACIJE ---
-def idi_na(strana):
-    st.session_state.stranica = strana
-    st.rerun()
+    # --- POMOĆNE FUNKCIJE ZA STIL ---
+    def get_gold(): return GOLD_DARK
+    def get_txt(): return "white"
+    def get_card(): return "#1e1e1e"
 
-def get_image_base64(path):
-    if os.path.exists(path):
-        with open(path, "rb") as image_file:
-            encoded_string = base64.b64encode(image_file.read()).decode()
-            return f"data:image/png;base64,{encoded_string}"
-    return ""
+    def polje(label, value="", numeric=True, expand=False):
+        return ft.TextField(
+            label=label, value=str(value), height=50,
+            border_color=get_gold(), focused_border_color=get_gold(),
+            color=get_txt(), label_style=ft.TextStyle(color=get_gold(), size=11),
+            border=ft.InputBorder.OUTLINE, border_radius=10, text_size=15,
+            keyboard_type=ft.KeyboardType.NUMBER if numeric else ft.KeyboardType.TEXT,
+            expand=expand
+        )
 
-# ==========================================
-# --- POČETNI EKRAN (DASHBOARD) ---
-# ==========================================
-if st.session_state.stranica == 'pocetna':
-    
-    img_src = get_image_base64("kazan.png")
-    
-    if img_src:
-        image_html = f'<img src="{img_src}" width="140" style="margin-bottom: 15px; filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.8)); transition: transform 0.3s;">'
-    else:
-        image_html = '<div style="font-size: 60px; margin-bottom: 10px; text-shadow: 2px 4px 6px rgba(0,0,0,0.4);">⚗️</div>'
+    def akcija_dugme(tekst, funkcija):
+        return ft.Container(
+            content=ft.Text(tekst, weight="bold", color="black", size=15),
+            bgcolor=get_gold(), padding=10, border_radius=10, 
+            alignment=ft.Alignment(0, 0), on_click=funkcija, height=50
+        )
 
-    st.markdown(f"""
-        <div class="header-box">
-            {image_html}
-            <h1 style='color: white; margin:0; font-size: 28px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);'>RAKIJA MASTER</h1>
-            <p style='color: #eee; font-style: italic; font-size: 14px;'>Premium Distillery Tools</p>
-        </div>
-    """, unsafe_allow_html=True)
+    # --- NAVIGACIJA ---
+    def idi_na(funkcija, ime):
+        page.views.append(
+            ft.View(
+                route=f"/{ime}",
+                controls=[funkcija()],
+                bgcolor="#121212",
+                padding=15,
+                scroll="auto"
+            )
+        )
+        page.update()
 
-    st.markdown("<p style='color:#D4AF37; font-weight:bold; margin-bottom:5px;'>🟢 UKOMLJAVANJE</p>", unsafe_allow_html=True)
-    c1, c2 = st.columns(2)
-    with c1:
-        if st.button("🍇 Šećer i Alk.", use_container_width=True): idi_na('secer')
-    with c2:
-        if st.button("🦠 Kvasci", use_container_width=True): idi_na('kvasci')
+    def view_pop(e):
+        if len(page.views) > 1:
+            page.views.pop()
+            page.update()
 
-    st.markdown("<p style='color:#D4AF37; font-weight:bold; margin-top:15px; margin-bottom:5px;'>🔥 DESTILACIJA</p>", unsafe_allow_html=True)
-    c3, c4 = st.columns(2)
-    with c3:
-        if st.button("✂️ Prvenac", use_container_width=True): idi_na('prvenac')
-        if st.button("💧 Razblaživanje", use_container_width=True): idi_na('razblazivanje')
-        if st.button("⚖️ Kupažiranje", use_container_width=True): idi_na('kupaza')
-    with c4:
-        if st.button("🏁 Patoka (Srce)", use_container_width=True): idi_na('patoka')
-        if st.button("🌡️ Temperatura", use_container_width=True): idi_na('temperatura')
+    page.on_view_pop = view_pop
 
-    st.markdown("<p style='color:#D4AF37; font-weight:bold; margin-top:15px; margin-bottom:5px;'>🏺 ODLEŽAVANJE & EVIDENCIJA</p>", unsafe_allow_html=True)
-    c5, c6 = st.columns(2)
-    with c5:
-        if st.button("🪵 Bure (Litri)", use_container_width=True): idi_na('bure')
-    with c6:
-        if st.button("📖 Dnevnik", use_container_width=True): idi_na('dnevnik')
+    def dugme_nazad():
+        return ft.Container(
+            content=ft.TextButton(
+                content=ft.Text("⬅ NAZAD NA MENI", color=get_gold(), weight="bold", size=14),
+                on_click=view_pop
+            ),
+            padding=15, alignment=ft.Alignment(-1, 0)
+        )
 
-# ==========================================
-# --- STRANICE ALATA ---
-# ==========================================
-else:
-    st.markdown("<div class='btn-nazad'>", unsafe_allow_html=True)
-    if st.button("⬅ NAZAD NA MENI", use_container_width=True):
-        idi_na('pocetna')
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    st.write("---")
+    # ==========================================
+    # --- STRANICE ALATA ---
+    # ==========================================
 
-    # 1. KONVERZIJA ŠEĆERA
-    if st.session_state.stranica == 'secer':
-        st.subheader("🍇 Konverter šećera")
-        brix = st.slider("Izmeren šećer (% Brix):", min_value=0.0, max_value=30.0, value=12.0, step=0.5)
-        babo = brix * 0.85
-        oechsle = brix * 4.25
-        pot_alkohol = brix * 0.55
-        st.info(f"**Babo (KMW):** {babo:.1f}°\n\n**Oechsle:** {oechsle:.0f}°")
-        st.success(f"**Potencijalni alkohol u komini:** oko {pot_alkohol:.1f} % vol")
+    def komina_strana():
+        u = polje("Šećer u komini (% Brix)", "18")
+        r = ft.Text(size=15, weight="bold", color=get_txt())
+        def rac(e):
+            try:
+                b = float(u.value)
+                r.value = f"Babo: {b*0.85:.1f}° | Oechsle: {b*4.25:.0f}°\nPotencijalni alkohol: {b*0.55:.1f}% vol"
+            except: r.value = "Greška!"
+            page.update()
+        return ft.Column([
+            ft.Text("🍇 ANALIZA KOMINE", size=22, weight="bold", color=get_gold()),
+            u, akcija_dugme("IZRAČUNAJ", rac), r, dugme_nazad()
+        ])
 
-    # 2. KVASCI I ENZIMI
-    elif st.session_state.stranica == 'kvasci':
-        st.subheader("🦠 Kvasci, Enzimi i Hrana")
-        voca_kg = st.number_input("Količina voća (kg):", min_value=10, value=100, step=10)
-        enzim = (voca_kg / 100) * 2
-        kvasac = (voca_kg / 100) * 25
-        hrana = (voca_kg / 100) * 25
-        st.warning(f"**Receptura za {voca_kg} kg komine:**")
-        st.write(f"- **Enzimi (pektolitika):** {enzim:.1f} g")
-        st.write(f"- **Selekcionisani kvasac:** {kvasac:.1f} g")
-        st.write(f"- **Hrana za kvasce:** {hrana:.1f} g")
+    def kvasci_strana():
+        u = polje("Količina voća (kg)", "100")
+        r = ft.Text(size=15, weight="bold", color=get_txt())
+        def rac(e):
+            try:
+                k = float(u.value)
+                r.value = f"Enzim: {(k/100)*2:.1f}g\nKvasac: {(k/100)*25:.1f}g\nHrana: {(k/100)*25:.1f}g"
+            except: r.value = "Greška!"
+            page.update()
+        return ft.Column([
+            ft.Text("🦠 KVASCI I ENZIMI", size=22, weight="bold", color=get_gold()),
+            u, akcija_dugme("IZRAČUNAJ", rac), r, dugme_nazad()
+        ])
 
-    # 3. ODVAJANJE PRVENCA
-    elif st.session_state.stranica == 'prvenac':
-        st.subheader("✂️ Odvajanje prvenca")
-        voce = st.selectbox("Vrsta voća:",["Šljiva", "Kajsija / Breskva", "Dunja", "Jabuka / Kruška", "Grožđe (Loza)", "Ostalo"])
-        meka = st.number_input("Meka rakija u kazanu (L):", min_value=1.0, value=100.0, step=5.0)
-        if voce in ["Kajsija / Breskva", "Dunja"]: proc = 0.015
-        elif voce == "Šljiva": proc = 0.008
-        else: proc = 0.010
-        prvenac = meka * proc
-        st.error(f"Preporučeno za odvajanje: **{prvenac:.2f} Litara** ({proc*100}%)")
-        st.caption("Aplikacija daje procenu zasnovanu na prosečnoj količini pektina u voću. Konačan presek uvek radi na miris!")
+    def prvenac_strana():
+        u = polje("Meka rakija (L)", "100")
+        v = ft.Dropdown(label="Voće", border_color=get_gold(), color=get_txt(), options=[ft.dropdown.Option("Šljiva (1%)"), ft.dropdown.Option("Dunja (1.5%)"), ft.dropdown.Option("Ostalo (1.2%)")], value="Šljiva (1%)")
+        r = ft.Text(size=16, color="red", weight="bold")
+        def rac(e):
+            try:
+                p = 0.015 if "Dunja" in v.value else (0.012 if "Ostalo" in v.value else 0.01)
+                r.value = f"ODVOJITI: {float(u.value)*p:.2f} L"
+            except: r.value = "Greška!"
+            page.update()
+        return ft.Column([
+            ft.Text("✂️ PRVENAC", size=22, weight="bold", color=get_gold()),
+            v, u, akcija_dugme("IZRAČUNAJ", rac), r, dugme_nazad()
+        ])
 
-    # 4. PATOKA
-    elif st.session_state.stranica == 'patoka':
-        st.subheader("🏁 Presek: Odvajanje Patoke")
-        st.write("Trenutak kada prestaješ da hvataš srce rakije.")
-        voce = st.selectbox("Vrsta voća u kazanu:",["Šljiva", "Kajsija / Breskva", "Dunja", "Jabuka / Kruška", "Grožđe (Loza)"])
-        if voce in ["Kajsija / Breskva", "Dunja"]:
-            preporuka = "45% - 50%"
-            opis = "Aromatično voće brzo gubi fine arome na luli i povlači kiselkaste patočne tonove. Reži ranije!"
-        elif voce == "Šljiva":
-            preporuka = "40% - 45%"
-            opis = "Šljiva je stabilnija, ali ispod 40% na luli počinju da izlaze teški alkoholi (fuzeli) koji mute rakiju."
-        elif voce == "Jabuka / Kruška":
-            preporuka = "40% - 42%"
-            opis = "Pazi na miris, čim osetiš tupi miris 'na vosak' ili 'travu', prekidaj hvatanje srca."
-        else:
-            preporuka = "35% - 40%"
-            opis = "Loza podnosi malo dublje hvatanje, ali prati aromu."
-        st.error(f"Kada jačina **NA LULI** padne na: **{preporuka} vol**")
-        st.info(opis)
+    def razblazivanje_strana():
+        v, j1, j2 = polje("Litraža (L)", "10"), polje("Trenutna %", "65"), polje("Željena %", "42")
+        r = ft.Text(size=16, color="green", weight="bold")
+        def rac(e):
+            try:
+                vd = float(v.value) * (float(j1.value)/float(j2.value) - 1)
+                r.value = f"DODATI VODE: {vd:.2f} L"
+            except: r.value = "Greška!"
+            page.update()
+        return ft.Column([
+            ft.Text("💧 RAZBLAŽIVANJE", size=22, weight="bold", color=get_gold()),
+            v, j1, j2, akcija_dugme("IZRAČUNAJ", rac), r, dugme_nazad()
+        ])
 
-    # 5. RAZBLAŽIVANJE
-    elif st.session_state.stranica == 'razblazivanje':
-        st.subheader("💧 Razblaživanje rakije")
-        v_r = st.number_input("Količina rakije (L):", min_value=0.5, value=10.0, step=0.5)
-        j1 = st.slider("Trenutna jačina (%):", min_value=20.0, max_value=80.0, value=65.0, step=0.5)
-        j2 = st.slider("Željena jačina (%):", min_value=20.0, max_value=60.0, value=42.0, step=0.5)
-        if j1 <= j2:
-            st.error("Željena jačina mora biti manja od trenutne!")
-        else:
-            voda = v_r * (j1 / j2 - 1)
-            st.success(f"Sipati destilovanu vodu: **{voda:.2f} L**")
+    def temperatura_strana():
+        j, t = polje("Jačina %", "45"), polje("Temp °C", "15")
+        r = ft.Text(size=16, color=get_gold(), weight="bold")
+        def rac(e):
+            try:
+                s = float(j.value) + (20 - float(t.value)) * 0.3
+                r.value = f"STVARNA JAČINA: {s:.1f}%"
+            except: r.value = "Greška!"
+            page.update()
+        return ft.Column([
+            ft.Text("🌡️ TEMPERATURA", size=22, weight="bold", color=get_gold()),
+            j, t, akcija_dugme("IZRAČUNAJ", rac), r, dugme_nazad()
+        ])
 
-    # 6. TEMPERATURA
-    elif st.session_state.stranica == 'temperatura':
-        st.subheader("🌡️ Korekcija temperature")
-        izm = st.slider("Očitana jačina na alkoholmetru (%):", 10.0, 80.0, 45.0, 0.5)
-        temp = st.slider("Temperatura destilata (°C):", 0.0, 40.0, 25.0, 1.0)
-        stvarna = izm - ((temp - 20) * 0.3) if temp > 20 else izm + ((20 - temp) * 0.3)
-        st.warning(f"Stvarna jačina (na 20°C): **{stvarna:.1f} % vol**")
+    def patoka_strana():
+        v = ft.Dropdown(label="Voće", border_color=get_gold(), color=get_txt(), 
+                        options=[ft.dropdown.Option("Šljiva"), ft.dropdown.Option("Dunja"), ft.dropdown.Option("Jabuka")], 
+                        value="Šljiva")
+        r = ft.Text(size=15, color=get_txt())
+        def rac(e):
+            s = {"Šljiva": "Prekidaj na 40-45% na luli.", "Dunja": "Prekidaj na 45-50% na luli.", "Jabuka": "Prekidaj na oko 42%."}
+            r.value = s[v.value]; page.update()
+        return ft.Column([
+            ft.Text("🏁 PATOKA", size=22, weight="bold", color=get_gold()),
+            v, akcija_dugme("SAVET", rac), r, dugme_nazad()
+        ])
 
-    # 7. KUPAŽIRANJE
-    elif st.session_state.stranica == 'kupaza':
-        st.subheader("⚖️ Kupažiranje (Mešanje)")
-        col1, col2 = st.columns(2)
-        with col1:
-            v1 = st.number_input("Rakija 1 (L):", value=10.0, step=1.0)
-            j1 = st.number_input("Jačina 1 (%):", value=60.0, step=1.0)
-        with col2:
-            v2 = st.number_input("Rakija 2 (L):", value=5.0, step=1.0)
-            j2 = st.number_input("Jačina 2 (%):", value=40.0, step=1.0)
-        if (v1+v2) > 0:
-            j_nova = ((v1 * j1) + (v2 * j2)) / (v1 + v2)
-            st.success(f"Dobijaš **{v1+v2} L** rakije jačine **{j_nova:.1f} % vol**")
+    def kupaza_strana():
+        v1, j1 = polje("L1 (Litri)", "10", expand=True), polje("Jačina 1 (%)", "60", expand=True)
+        v2, j2 = polje("L2 (Litri)", "5", expand=True), polje("Jačina 2 (%)", "40", expand=True)
+        r = ft.Text(size=15, color=get_txt())
+        def rac(e):
+            try:
+                uk = float(v1.value) + float(v2.value)
+                n = (float(v1.value)*float(j1.value) + float(v2.value)*float(j2.value)) / uk
+                r.value = f"Ukupno: {uk}L | Jačina: {n:.1f}%"
+            except: r.value = "Greška!"
+            page.update()
+        return ft.Column([
+            ft.Text("⚖️ KUPAŽA", size=22, weight="bold", color=get_gold()),
+            ft.Row([v1, j1]), ft.Row([v2, j2]), akcija_dugme("IZRAČUNAJ", rac), r, dugme_nazad()
+        ])
 
-    # 8. ZAPREMINA BURETA
-    elif st.session_state.stranica == 'bure':
-        st.subheader("🪵 Zapremina Drvenog Bureta")
-        h = st.slider("Visina bureta / Dužina duga (cm):", 20.0, 150.0, 70.0, 1.0)
-        d_sredina = st.number_input("Prečnik na najširem delu (cm):", value=60.0, step=1.0)
-        d_kraj = st.number_input("Prečnik na dnu/vrhu (cm):", value=50.0, step=1.0)
-        if st.button("IZRAČUNAJ ZAPREMINU", use_container_width=True):
-            v_litri = (math.pi * h / 12 * (2 * d_sredina**2 + d_kraj**2)) / 1000
-            st.success(f"Zapremina bureta je približno: **{v_litri:.1f} Litara**")
+    def bure_strana():
+        h, ds, dk = polje("Visina (cm)", "70"), polje("Sredina (cm)", "60"), polje("Dno (cm)", "50")
+        r = ft.Text(size=15, color=get_txt())
+        def rac(e):
+            try:
+                v = (math.pi * float(h.value) / 12 * (2 * float(ds.value)**2 + float(dk.value)**2)) / 1000
+                r.value = f"Zapremina: oko {v:.1f} L"
+            except: r.value = "Greška!"
+            page.update()
+        return ft.Column([
+            ft.Text("🪵 BURE", size=22, weight="bold", color=get_gold()),
+            h, ds, dk, akcija_dugme("IZRAČUNAJ", rac), r, dugme_nazad()
+        ])
 
-    # 9. DNEVNIK
-    elif st.session_state.stranica == 'dnevnik':
-        st.subheader("📖 Digitalni Dnevnik")
-        with st.expander("➕ Dodaj novi unos", expanded=True):
-            ime = st.text_input("Naziv serije (npr. Kajsija 2026):")
-            kg = st.number_input("Količina voća (kg):", value=500)
-            dobijeno = st.number_input("Dobijeno litara:", value=45.0)
-            jacina = st.number_input("Jačina (%):", value=42.0)
-            if st.button("💾 SAČUVAJ U DNEVNIK", use_container_width=True):
-                if ime:
-                    unos = {"datum": datetime.now().strftime("%d.%m.%Y"), "ime": ime, "kg": kg, "litara": dobijeno, "jacina": jacina}
-                    st.session_state.dnevnik.append(unos)
-                    st.success("Uspešno sačuvano!")
-                else: st.error("Unesi naziv serije.")
-        st.write("### 🗄️ Arhiva")
-        if len(st.session_state.dnevnik) == 0: st.caption("Dnevnik je prazan.")
-        else:
-            for item in reversed(st.session_state.dnevnik):
-                st.markdown(f"""
-                <div style='background-color:#1e1e1e; padding:15px; border-radius:10px; margin-bottom:10px; border-left:5px solid #D4AF37;'>
-                    <strong style='color:#D4AF37; font-size:18px;'>{item['ime']}</strong><br>
-                    <small style='color:#888;'>Datum: {item['datum']}</small><br>
-                    Voće: <b>{item['kg']} kg</b> | Dobijeno: <b>{item['litara']} L</b> | Jačina: <b>{item['jacina']}%</b>
-                </div>
-                """, unsafe_allow_html=True)
+    def dnevnik_strana():
+        lista_prikaz = ft.Column(spacing=10)
+        def obrisi_unos(index):
+            page.dnevnik.pop(index); sacuvaj_podatke(page.dnevnik); osvezi_listu()
+        def osvezi_listu():
+            lista_prikaz.controls.clear()
+            for i, s in enumerate(reversed(page.dnevnik)):
+                idx = len(page.dnevnik) - 1 - i
+                lista_prikaz.controls.append(
+                    ft.Container(
+                        content=ft.Row([
+                            ft.Column([
+                                ft.Text(f"{s.get('ime','-')} ({s.get('godina','-')})", weight="bold", size=14, color=get_gold()),
+                                ft.Text(f"{s.get('kg','-')}kg | {s.get('datum','-')} | {s.get('litara','-')}L | {s.get('jacina','-')}%", size=12),
+                            ], expand=True),
+                            ft.IconButton(icon=ft.icons.DELETE_OUTLINE, icon_color="red", on_click=lambda _, x=idx: obrisi_unos(x))
+                        ]),
+                        bgcolor=get_card(), padding=10, border_radius=10, border=ft.Border.all(1, get_gold())
+                    )
+                )
+            page.update()
 
-st.markdown("<br><p style='text-align: center; color: #555; font-size:12px;'>Cloud015 © 2026</p>", unsafe_allow_html=True)
+        f_ime, f_god = polje("Voće", "Šljiva", False, expand=True), polje("Godina", "2024", expand=True)
+        f_kg, f_dat = polje("Kg", "500", expand=True), polje("Datum", datetime.now().strftime("%d.%m"), False, expand=True)
+        f_lit, f_jac = polje("Litri", "50", expand=True), polje("Jačina %", "42", expand=True)
+
+        def dodaj(e):
+            if f_ime.value:
+                page.dnevnik.append({"ime": f_ime.value, "godina": f_god.value, "kg": f_kg.value, "datum": f_dat.value, "litara": f_lit.value, "jacina": f_jac.value})
+                sacuvaj_podatke(page.dnevnik); osvezi_listu()
+
+        osvezi_listu()
+        return ft.Column([
+            ft.Text("📖 DNEVNIK RADA", size=22, weight="bold", color=get_gold()), 
+            ft.Row([f_ime, f_god]), ft.Row([f_kg, f_dat]), ft.Row([f_lit, f_jac]), 
+            akcija_dugme("SAČUVAJ U ARHIVU", dodaj), 
+            ft.Divider(color=get_gold()), lista_prikaz, dugme_nazad()
+        ])
+
+    def linkovi_strana():
+        def link_dugme(tekst, ikona, url):
+            return ft.Container(
+                content=ft.Row([ft.Text(ikona, size=24), ft.Text(tekst, weight="bold", color="black")], alignment="center"),
+                bgcolor=get_gold(), padding=15, border_radius=10, url=url
+            )
+        return ft.Column([
+            ft.Text("🔗 LINKOVI I DOGAĐAJI", size=22, weight="bold", color=get_gold()),
+            link_dugme("Knjiga: Rakijski kod", "📘", "https://www.facebook.com/rakijskikod/"),
+            link_dugme("Rakija iz rakije", "🥂", "https://www.rakijaizrakije.com"),
+            link_dugme("Savez proizvođača rakija", "🤝", "https://savezrakija.rs"),
+            ft.Divider(color=get_gold()),
+            ft.Text("📅 DOGAĐAJI", size=18, weight="bold", color=get_gold()),
+            ft.Container(content=ft.Text("18.04.2024. Prvi Hajdučki festival rakije - Bogatić", color=get_gold(), weight="bold"), url="https://www.facebook.com/p/Хајдуčki-festival-rakije-Bogatić-61584019897579/"),
+            dugme_nazad()
+        ])
+
+    # --- POČETNA STRANA ---
+    def pocetna_strana():
+        def stavka(t, i, funkcija, ime):
+            return ft.Container(
+                content=ft.Column([ft.Text(i, size=30), ft.Text(t, size=12, weight="bold", color=get_gold())], horizontal_alignment="center", alignment="center"),
+                bgcolor=get_card(), expand=1, height=90, border_radius=15, border=ft.Border.all(1, get_gold()),
+                on_click=lambda _: idi_na(funkcija, ime)
+            )
+        
+        slika = ft.Image(src="kazan.png", width=150, height=150) if os.path.exists("kazan.png") else ft.Text("⚗️", size=70)
+
+        return ft.Column([
+            ft.Container(
+                content=ft.Column([
+                    ft.Text("RAKIJA MASTER PRO", size=24, weight="900", color="white"),
+                    ft.Container(content=slika, alignment=ft.Alignment(0, 0), padding=10)
+                ]), bgcolor=get_gold(), padding=20, border_radius=ft.BorderRadius(0,0,35,35), shadow=ft.BoxShadow(blur_radius=10, color="#66000000")
+            ),
+            ft.ListView([
+                ft.Text(" 🟢 UKOMLJAVANJE", size=14, weight="bold", color=get_gold()),
+                ft.Row([stavka("Komina", "🍇", komina_strana, "komina"), stavka("Kvasci", "🦠", kvasci_strana, "kvasci")]),
+                ft.Text(" 🔥 DESTILACIJA", size=14, weight="bold", color=get_gold()),
+                ft.Row([stavka("Prvenac", "✂️", prvenac_strana, "prvenac"), stavka("Patoka", "🏁", patoka_strana, "patoka")]),
+                ft.Row([stavka("Razblaživanje", "💧", razblazivanje_strana, "razblazivanje"), stavka("Temperatura", "🌡️", temperatura_strana, "temp")]),
+                ft.Text(" ⚖️ KUPAŽA I BURE", size=14, weight="bold", color=get_gold()),
+                ft.Row([stavka("Kupaža", "⚖️", kupaza_strana, "kupaza"), stavka("Bure", "🪵", bure_strana, "bure")]),
+                ft.Text(" 📖 ARHIVA", size=14, weight="bold", color=get_gold()),
+                ft.Row([stavka("Dnevnik", "📖", dnevnik_strana, "dnevnik"), stavka("Linkovi", "🔗", linkovi_strana, "linkovi")]),
+            ], expand=True, spacing=10, padding=15)
+        ], expand=True)
+
+    page.views.append(ft.View(route="/", controls=[pocetna_strana()], bgcolor="#121212", padding=0))
+    page.update()
+
+if __name__ == "__main__":
+    ft.run(main)
