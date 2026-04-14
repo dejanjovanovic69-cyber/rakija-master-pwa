@@ -18,7 +18,7 @@ if datetime.now() > DATUM_ISTEKA:
     st.error("PROBNI PERIOD ISTEKAO")
     st.stop()
 
-# --- 2. ČUVANJE PODATAKA (DNEVNIK) ---
+# --- 2. ČUVANJE PODATAKA ---
 FILE_PATH = "dnevnik_podaci.json"
 
 def ucitaj_podatke():
@@ -34,7 +34,7 @@ def sacuvaj_podatke(lista):
     with open(FILE_PATH, "w", encoding="utf-8") as f:
         json.dump(lista, f, indent=4, ensure_ascii=False)
 
-# --- 3. INICIJALIZACIJA SESIJE ---
+# --- 3. SESIJA ---
 if "stranica" not in st.session_state:
     st.session_state.stranica = "pocetna"
 if "theme_mode" not in st.session_state:
@@ -54,54 +54,53 @@ else:
     TXT = "black"
     CARD = "white"
 
-# --- 4. NAJJAČI CSS ZA UKLANJANJE BADGE-OVA ---
+# === NAJJAČI CSS ===
 st.markdown(f"""
 <style>
-    /* === POTPUNO UKLANJANJE SVIH STREAMLIT BADGE-OVA I WIDGETA === */
     [data-testid="stHeader"],
     [data-testid="stToolbar"],
     [data-testid="stAppDeployButton"],
     .stDeployButton,
-    .stAppDeployButton,
     [data-testid="stStatusWidget"],
     footer,
     [data-testid="stFooter"],
     #MainMenu,
     [data-testid="stDecoration"],
-    button[title="View app in new tab"],
-    .st-emotion-cache-1r4qjyz,
-    .st-emotion-cache-13ln4jf,
-    .st-emotion-cache-1g8v9l4,
-    [data-testid="stAppViewContainer"] > div:first-child > div:nth-child(2) {{
+    button[title="View app in new tab"] {{
         display: none !important;
         visibility: hidden !important;
         height: 0 !important;
         min-height: 0 !important;
-        max-height: 0 !important;
-        overflow: hidden !important;
-        margin: 0 !important;
-        padding: 0 !important;
     }}
 
-    /* Još jače čišćenje donjeg desnog ugla */
-    div[style*="position: fixed"],
-    div[style*="bottom"],
-    div[style*="right: 0"] {{
+    /* Najjače uklanjanje "Hosted with Streamlit" badge-a */
+    div[data-testid="stAppViewContainer"] > div > div > div > div:nth-child(2),
+    .st-emotion-cache-1r4qjyz,
+    .st-emotion-cache-13ln4jf,
+    .st-emotion-cache-1g8v9l4,
+    .st-emotion-cache-1rs6os,
+    div[class*="Hosted"],
+    div[style*="Hosted with Streamlit"],
+    div[style*="bottom:"] div[style*="right:"],
+    .css-1v3fvcr {{
         display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+        width: 0px !important;
+        overflow: hidden !important;
+        position: absolute !important;
+        left: -9999px !important;
     }}
 
     .stApp {{
         background-color: {BG} !important;
-        color: {TXT} !important;
     }}
-
     .block-container {{
-        padding-top: 0.8rem !important;
+        padding-top: 0.5rem !important;
         padding-bottom: 4rem !important;
         max-width: 520px !important;
     }}
 
-    /* Flet Header */
     .flet-header {{
         background-color: {GOLD};
         padding: 20px;
@@ -117,7 +116,6 @@ st.markdown(f"""
         margin: 0;
     }}
 
-    /* Dugmad */
     div.stButton > button {{
         background-color: {CARD} !important;
         color: {GOLD} !important;
@@ -126,7 +124,6 @@ st.markdown(f"""
         height: 80px !important;
         font-weight: bold !important;
         font-size: 16px !important;
-        transition: 0.3s;
     }}
     div.stButton > button:hover {{
         background-color: {GOLD} !important;
@@ -135,32 +132,12 @@ st.markdown(f"""
     div.stButton > button[data-testid="baseButton-primary"] {{
         background-color: {GOLD} !important;
         color: black !important;
-        height: 52px !important;
-    }}
-
-    .del-btn div.stButton > button {{
-        height: 40px !important;
-        border: none !important;
-        background: transparent !important;
     }}
 
     label p, label div {{
         color: {GOLD} !important;
         font-weight: bold !important;
-        font-size: 14px !important;
     }}
-
-    div[data-baseweb="input"] > div,
-    div[data-baseweb="select"] > div {{
-        background-color: {CARD} !important;
-        border: 1px solid {GOLD} !important;
-        border-radius: 10px !important;
-    }}
-
-    input, div[data-baseweb="input"] button {{
-        color: {TXT} !important;
-    }}
-
     .section-label {{
         color: {GOLD};
         font-size: 14px;
@@ -172,7 +149,7 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 5. POMOĆNE FUNKCIJE ---
+# --- POMOĆNE FUNKCIJE ---
 def idi_na(strana):
     st.session_state.stranica = strana
     st.rerun()
@@ -184,14 +161,13 @@ def get_base64_img(path):
     return None
 
 # ==========================================
-# --- POČETNA STRANA ---
+# POČETNA STRANA
 # ==========================================
 if st.session_state.stranica == "pocetna":
     img_b64 = get_base64_img("kazan.png")
     slika_html = (
         f'<img src="data:image/png;base64,{img_b64}" width="120" style="margin-top:10px;" />'
-        if img_b64
-        else '<div style="font-size:60px;">⚗️</div>'
+        if img_b64 else '<div style="font-size:60px;">⚗️</div>'
     )
     ikona_teme = "☀️" if st.session_state.theme_mode == "dark" else "🌙"
 
@@ -251,19 +227,13 @@ if st.session_state.stranica == "pocetna":
             idi_na("linkovi")
 
 # ==========================================
-# --- STRANICE ALATA ---
+# OSTALE STRANICE
 # ==========================================
 else:
     def naslov_alata(tekst, podnaslov=""):
-        st.markdown(
-            f"<h2 style='color:{GOLD}; font-size:24px; font-weight:bold; margin-bottom: 0px;'>{tekst}</h2>",
-            unsafe_allow_html=True
-        )
+        st.markdown(f"<h2 style='color:{GOLD}; font-size:24px; font-weight:bold; margin-bottom:0;'>{tekst}</h2>", unsafe_allow_html=True)
         if podnaslov:
-            st.markdown(
-                f"<p style='color:{TXT}; font-size:14px; font-style:italic;'>{podnaslov}</p>",
-                unsafe_allow_html=True
-            )
+            st.markdown(f"<p style='color:{TXT}; font-size:14px; font-style:italic;'>{podnaslov}</p>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
     if st.session_state.stranica == "komina":
@@ -307,11 +277,7 @@ else:
         naslov_alata("🏁 PATOKA", "Trenutak kada se prekida hvatanje srca rakije.")
         v = st.selectbox("Voće", ["Šljiva", "Dunja", "Jabuka"])
         if st.button("SAVET", type="primary", use_container_width=True):
-            s = {
-                "Šljiva": "Prekidaj na 40-45% na luli.",
-                "Dunja": "Prekidaj na 45-50% na luli.",
-                "Jabuka": "Prekidaj na oko 42%."
-            }
+            s = {"Šljiva": "Prekidaj na 40-45% na luli.", "Dunja": "Prekidaj na 45-50% na luli.", "Jabuka": "Prekidaj na oko 42%."}
             st.info(s[v])
 
     elif st.session_state.stranica == "kupaza":
@@ -362,8 +328,8 @@ else:
             with rc1:
                 st.markdown(f"""
                 <div style="background-color:{CARD}; padding:15px; border-radius:10px; border:1px solid {GOLD};">
-                    <strong style="color:{GOLD}; font-size:16px;">{s.get('ime','-')} ({s.get('godina','-')})</strong><br>
-                    <span style="color:{TXT}; font-size:14px;">{s.get('kg','-')}kg | {s.get('datum','-')} | {s.get('litara','-')}L | {s.get('jacina','-')}%</span>
+                    <strong style="color:{GOLD};">{s.get('ime','-')} ({s.get('godina','-')})</strong><br>
+                    <span style="color:{TXT};">{s.get('kg','-')}kg | {s.get('datum','-')} | {s.get('litara','-')}L | {s.get('jacina','-')}%</span>
                 </div>
                 """, unsafe_allow_html=True)
             with rc2:
@@ -376,25 +342,21 @@ else:
             st.markdown("<br>", unsafe_allow_html=True)
 
     elif st.session_state.stranica == "linkovi":
-        naslov_alata("🔗 KORISNI LINKOVI", "Preporučeni sajtovi, prodavnice i udruženja.")
+        naslov_alata("🔗 KORISNI LINKOVI")
         def link_dugme(tekst, ikona, url):
             st.markdown(f'''
             <a href="{url}" target="_blank" style="text-decoration:none;">
                 <div style="background-color:{GOLD}; color:black; padding:15px; border-radius:10px; 
                 display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px; font-weight:bold;">
-                    <span style="font-size:24px;">{ikona}</span>
-                    <span style="font-size:16px;">{tekst}</span>
+                    <span style="font-size:24px;">{ikona}</span><span>{tekst}</span>
                 </div>
             </a>
             ''', unsafe_allow_html=True)
-        link_dugme("Knjiga: Rakijski kod", "📘", "https://www.facebook.com/rakijskikod/?locale=sr_RS")
+        link_dugme("Knjiga: Rakijski kod", "📘", "https://www.facebook.com/rakijskikod/")
         link_dugme("Rakija iz rakije", "🥂", "https://www.rakijaizrakije.com")
         link_dugme("Savez proizvođača rakija", "🤝", "https://savezrakija.rs")
         link_dugme("Rakija Shop", "🛒", "https://rakijashop.eu/srb/")
         link_dugme("Čiča Zlajina Rakija", "🏺", "https://cicazlajinarakija.rs")
-        st.divider()
-        st.markdown(f"<p style='color:{GOLD}; font-size:18px; font-weight:bold;'>📅 DOGAĐAJI</p>", unsafe_allow_html=True)
-        link_dugme("18.04.2024. Hajdučki festival", "📍", "https://www.facebook.com/p/Хајдучки-фестивал-ракије-Богатић-Hajdučki-festival-rakije-Bogatić-61584019897579/")
 
     st.divider()
     if st.button("⬅ NAZAD NA MENI", use_container_width=True):
