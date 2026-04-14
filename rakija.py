@@ -109,11 +109,32 @@ st.markdown(f"""
     /* Naslovi sekcija */
     .section-label {{ color: {GOLD}; font-size: 14px; font-weight: bold; margin-top: 20px; margin-bottom: 10px; text-transform: uppercase; }}
 
-    /* Input polja */
-    div[data-baseweb="input"], div[data-baseweb="select"] > div {{
+    /* =========================================
+       POPRAVKA ZA POLJA ZA UNOS I TEKST IZNAD NJIH
+       ========================================= */
+       
+    /* Boja teksta iznad polja (Labele) */
+    label p, label div {{
+        color: {GOLD} !important;
+        font-weight: bold !important;
+        font-size: 14px !important;
+    }}
+
+    /* Pozadina i ivice samog polja za unos */
+    div[data-baseweb="input"] > div, div[data-baseweb="select"] > div {{
         background-color: {CARD} !important;
         border: 1px solid {GOLD} !important;
         border-radius: 10px !important;
+    }}
+    
+    /* Tekst unutar polja za unos i plus/minus dugmići */
+    input, div[data-baseweb="input"] button {{
+        color: {TXT} !important;
+        background-color: transparent !important;
+    }}
+    
+    /* Tekst u padajućem meniju (Selectbox) */
+    div[data-baseweb="select"] span {{
         color: {TXT} !important;
     }}
     </style>
