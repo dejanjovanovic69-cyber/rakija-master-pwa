@@ -3,126 +3,151 @@ from datetime import datetime
 import math
 import base64
 import os
+import json
 
 # --- 1. KONFIGURACIJA STRANICE ---
 st.set_page_config(page_title="Rakija Master Pro", page_icon="🥃", layout="centered")
 
-# --- 2. INICIJALIZACIJA SESIJE ---
+# --- 2. AKTIVACIJA DO 31. DECEMBRA 2026. ---
+DATUM_ISTEKA = datetime(2026, 12, 31)
+if datetime.now() > DATUM_ISTEKA:
+    st.error("PROBNI PERIOD ISTEKAO")
+    st.stop()
+
+# --- 3. INICIJALIZACIJA SESIJE (IDENTIČNO KAO FLET) ---
 if 'stranica' not in st.session_state:
     st.session_state.stranica = 'pocetna'
+if 'theme_mode' not in st.session_state:
+    st.session_state.theme_mode = 'dark'
 if 'dnevnik' not in st.session_state:
+    # Simulacija ucitavanja iz fajla (u Streamlit Cloud je session_state bolji)
     st.session_state.dnevnik = []
 
-# --- 3. CSS ZA IDENTIČAN IZGLED KAO NA SLICI (ŠIROKI TASTERI, TAMNA TEMA) ---
-st.markdown("""
+GOLD_DARK = "#D4AF37"
+GOLD_LIGHT = "#996515"
+
+def get_gold():
+    return GOLD_DARK if st.session_state.theme_mode == 'dark' else GOLD_LIGHT
+
+def get_bg():
+    return "#121212" if st.session_state.theme_mode == 'dark' else "#f8f9fa"
+
+def get_txt():
+    return "white" if st.session_state.theme_mode == 'dark' else "black"
+
+def get_card():
+    return "#1e1e1e" if st.session_state.theme_mode == 'dark' else "white"
+
+# --- 4. BRUTALAN CSS ZA REPLIKACIJU FLET UI ---
+st.markdown(f"""
     <style>
     /* SAKRIVANJE STREAMLIT ELEMENATA */
-    #MainMenu {visibility: hidden !important;}
-    header {visibility: hidden !important;}
-    footer {visibility: hidden !important;}
-    [data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stFooter"] {display: none !important;}
-    [data-testid="manage-app-button"], .viewerBadge_container__1QSob {display: none !important;}
+    #MainMenu {{visibility: hidden !important;}}
+    header {{visibility: hidden !important;}}
+    footer {{visibility: hidden !important;}}
+    [data-testid="stHeader"] {{display: none !important;}}
+    [data-testid="stToolbar"] {{display: none !important;}}
+    [data-testid="stFooter"] {{display: none !important;}}
+    [data-testid="manage-app-button"] {{display: none !important;}}
+    .viewerBadge_container__1QSob {{display: none !important;}}
     
     /* Globalni stilovi */
-    .stApp { background-color: #121212; color: #ffffff; }
-    .block-container { padding: 0 !important; max-width: 500px !important; margin: auto; }
+    .stApp {{ background-color: {get_bg()}; color: {get_txt()}; }}
+    .block-container {{ padding: 0 !important; max-width: 450px !important; margin: auto; }}
 
-    /* ZLATNI GRADIENT HEADER (IDENTIČAN SLICI) */
-    .header-box {
-        text-align: center;
-        padding: 60px 20px 40px 20px;
-        background: linear-gradient(to bottom, #D4AF37, #8B6E02);
-        margin: -1rem -1rem 2rem -1rem;
-        border-radius: 0 0 60px 60px;
-        box-shadow: 0px 15px 30px rgba(0,0,0,0.6);
-    }
-    .header-title {
-        color: white;
-        font-size: 38px;
-        font-weight: 900;
-        margin: 15px 0 5px 0;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-    }
-    .header-subtitle {
-        color: #f0f0f0;
-        font-style: italic;
-        font-size: 15px;
-        opacity: 0.9;
-    }
-
-    /* SEKCIJE (Naslovi sa emojijima) */
-    .section-label {
-        color: #ffffff;
-        font-size: 16px;
-        font-weight: bold;
-        margin: 30px 0 15px 15px;
+    /* ZLATNI HEADER (Kao u Fletu) */
+    .flet-header {{
+        background-color: {GOLD_DARK};
+        padding: 20px 15px 25px 20px;
+        border-radius: 0 0 35px 35px;
+        box-shadow: 0px 8px 15px rgba(0,0,0,0.4);
+        margin-bottom: 20px;
+    }}
+    .header-row {{
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
+        width: 100%;
+    }}
+    .header-title {{
+        color: white;
+        font-size: 22px;
+        font-weight: 900;
+        margin: 0;
+    }}
+    .theme-toggle {{
+        font-size: 24px;
+        cursor: pointer;
+        padding-right: 10px;
+    }}
+    .header-img-container {{
+        text-align: center;
+        margin-top: 10px;
+    }}
 
-    /* TASTERI (Široki, tamno sivi, zaobljeni - KAO NA SLICI) */
-    div[data-testid="stButton"] > button {
-        background-color: #262626 !important;
-        color: #D4AF37 !important;
-        border: 1px solid #333 !important;
+    /* SEKCIJE (Naslovi) */
+    .section-title {{
+        color: {get_gold()};
+        font-size: 14px;
+        font-weight: bold;
+        margin: 20px 0 10px 15px;
+        text-transform: uppercase;
+    }}
+
+    /* DUGMIĆI (Kvadratni stavka stil iz Fleta) */
+    div[data-testid="stButton"] > button {{
+        background-color: {get_card()} !important;
+        color: {get_gold()} !important;
+        border: 1px solid {get_gold()} !important;
         border-radius: 15px !important;
-        height: 70px !important;
+        height: 100px !important;
         width: 100% !important;
-        font-size: 17px !important;
-        font-weight: 500 !important;
-        transition: 0.2s !important;
-        box-shadow: 0px 6px 12px rgba(0,0,0,0.3) !important;
-        margin-bottom: 5px !important;
         display: flex !important;
+        flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
-    }
+        padding: 10px !important;
+        transition: 0.2s !important;
+        box-shadow: 0px 4px 8px rgba(0,0,0,0.2) !important;
+        white-space: pre-wrap !important;
+        line-height: 1.4 !important;
+    }}
     
-    div[data-testid="stButton"] > button:hover {
-        border-color: #D4AF37 !important;
-        background-color: #2d2d2d !important;
-    }
+    div[data-testid="stButton"] > button:hover {{
+        border-color: {get_txt()} !important;
+    }}
 
-    div[data-testid="stButton"] > button:active {
-        background-color: #D4AF37 !important;
+    div[data-testid="stButton"] > button:active {{
+        background-color: {get_gold()} !important;
         color: #121212 !important;
-        transform: scale(0.97) !important;
-    }
+    }}
 
-    /* Dugme za NAZAD */
-    .btn-nazad div[data-testid="stButton"] > button {
-        height: 50px !important;
+    /* Dugme NAZAD */
+    .back-btn div[data-testid="stButton"] > button {{
+        height: 45px !important;
         background-color: transparent !important;
-        border: 1px solid #D4AF37 !important;
-        color: #D4AF37 !important;
-        font-size: 15px !important;
-        margin: 15px !important;
+        border: 1px solid {get_gold()} !important;
+        color: {get_gold()} !important;
+        font-size: 14px !important;
+        margin: 10px 15px !important;
         width: calc(100% - 30px) !important;
-    }
+    }}
 
-    /* Input polja i forme */
-    div[data-baseweb="input"], div[data-baseweb="select"] > div {
-        background-color: #1e1e1e !important;
-        border-radius: 12px !important;
-        color: white !important;
-        border: 1px solid #444 !important;
-    }
-    label { color: #D4AF37 !important; font-weight: bold !important; margin-left: 5px; }
+    /* Input polja */
+    div[data-baseweb="input"], div[data-baseweb="select"] > div {{
+        background-color: {get_card()} !important;
+        border-radius: 10px !important;
+        color: {get_txt()} !important;
+        border: 1px solid {get_gold()} !important;
+    }}
+    label {{ color: {get_gold()} !important; font-size: 11px !important; font-weight: bold !important; }}
     
-    /* Razmak između kolona */
-    [data-testid="column"] {
-        padding: 0 8px !important;
-    }
-    
-    /* Alert poruke */
-    .stAlert { background-color: #1e1e1e !important; border: 1px solid #D4AF37 !important; color: white !important; border-radius: 15px !important; }
+    /* Rezultati i poruke */
+    .stAlert {{ background-color: {get_card()} !important; border: 1px solid {get_gold()} !important; color: {get_txt()} !important; }}
     </style>
     """, unsafe_allow_html=True)
 
-# --- 4. POMOĆNE FUNKCIJE ---
+# --- 5. POMOĆNE FUNKCIJE ---
 def idi_na(strana):
     st.session_state.stranica = strana
     st.rerun()
@@ -133,157 +158,214 @@ def get_image_base64(path):
             return base64.b64encode(image_file.read()).decode()
     return None
 
+def promeni_temu():
+    st.session_state.theme_mode = 'light' if st.session_state.theme_mode == 'dark' else 'dark'
+    st.rerun()
+
 # ==========================================
 # --- POČETNA STRANA (DASHBOARD) ---
 # ==========================================
 if st.session_state.stranica == 'pocetna':
-    # Header sa slikom i gradijentom (TAČNO KAO NA SLICI)
     img_b64 = get_image_base64("kazan.png")
-    img_html = f'<img src="data:image/png;base64,{img_b64}" width="160">' if img_b64 else '<div style="font-size: 90px;">⚗️</div>'
+    header_img = f'<img src="data:image/png;base64,{img_b64}" width="160">' if img_b64 else '<div style="font-size: 80px;">⚗️</div>'
+    ikona_teme = "☀️" if st.session_state.theme_mode == "dark" else "🌙"
 
     st.markdown(f"""
-        <div class="header-box">
-            {img_html}
-            <h1 class="header-title">RAKIJA MASTER</h1>
-            <p class="header-subtitle">Premium Distillery Tools</p>
+        <div class="flet-header">
+            <div class="header-row">
+                <p class="header-title">RAKIJA MASTER PRO</p>
+                <div class="theme-toggle" onclick="window.location.reload()">{ikona_teme}</div>
+            </div>
+            <div class="header-img-container">
+                {header_img}
+            </div>
         </div>
     """, unsafe_allow_html=True)
+    
+    # Dugme za temu mora biti Streamlit widget da bi radilo
+    c_theme1, c_theme2 = st.columns([4, 1])
+    with c_theme2:
+        if st.button(ikona_teme, key="theme_btn"):
+            promeni_temu()
 
-    # 🟢 UKOMLJAVANJE
-    st.markdown('<p class="section-label">🟢 UKOMLJAVANJE</p>', unsafe_allow_html=True)
+    # --- SEKCIJE ---
+    st.markdown('<p class="section-title"> 🟢 UKOMLJAVANJE</p>', unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     with c1:
-        if st.button("🍇 Šećer i Alk.", key="d_secer"): idi_na('secer')
+        if st.button("🍇\nKomina", key="k1"): idi_na('komina')
     with c2:
-        if st.button("🦠 Kvasci", key="d_kvasci"): idi_na('kvasci')
+        if st.button("🦠\nKvasci", key="k2"): idi_na('kvasci')
 
-    # 🔥 DESTILACIJA
-    st.markdown('<p class="section-label">🔥 DESTILACIJA</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-title"> 🔥 DESTILACIJA</p>', unsafe_allow_html=True)
     c3, c4 = st.columns(2)
     with c3:
-        if st.button("✂️ Prvenac", key="d_prvenac"): idi_na('prvenac')
-        if st.button("💧 Razblaživanje", key="d_razblaz"): idi_na('razblazivanje')
-        if st.button("⚖️ Kupažiranje", key="d_kupaza"): idi_na('kupaza')
+        if st.button("✂️\nPrvenac", key="d1"): idi_na('prvenac')
+        if st.button("💧\nRazblaživanje", key="d2"): idi_na('razblazivanje')
     with c4:
-        if st.button("🏁 Patoka (Srce)", key="d_patoka"): idi_na('patoka')
-        if st.button("🌡️ Temperatura", key="d_temp"): idi_na('temperatura')
+        if st.button("🏁\nPatoka", key="d3"): idi_na('patoka')
+        if st.button("🌡️\nTemperatura", key="d4"): idi_na('temperatura')
 
-    # 🏺 ODLEŽAVANJE & EVIDENCIJA
-    st.markdown('<p class="section-label">🏺 ODLEŽAVANJE & EVIDENCIJA</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-title"> ⚖️ KUPAŽA I ODLEŽAVANJE</p>', unsafe_allow_html=True)
     c5, c6 = st.columns(2)
     with c5:
-        if st.button("🪵 Bure (Litri)", key="d_bure"): idi_na('bure')
-        if st.button("🔗 Korisni Linkovi", key="d_linkovi"): idi_na('linkovi')
+        if st.button("⚖️\nKupaža", key="b1"): idi_na('kupaza')
     with c6:
-        if st.button("📖 Dnevnik", key="d_dnevnik"): idi_na('dnevnik')
+        if st.button("🪵\nBure", key="b2"): idi_na('bure')
+
+    st.markdown('<p class="section-title"> 📖 ARHIVA I LINKOVI</p>', unsafe_allow_html=True)
+    c7, c8 = st.columns(2)
+    with c7:
+        if st.button("📖\nDnevnik", key="a1"): idi_na('dnevnik')
+    with c8:
+        if st.button("🔗\nLinkovi", key="a2"): idi_na('linkovi')
+
+    st.divider()
+    if st.button("ZATVORI APLIKACIJU", key="exit_btn"):
+        st.warning("Aplikacija se ne može zatvoriti iz pretraživača. Osvežite stranicu.")
 
 # ==========================================
 # --- STRANICE ALATA ---
 # ==========================================
 else:
-    st.markdown("<div class='btn-nazad'>", unsafe_allow_html=True)
-    if st.button("⬅ NAZAD NA MENI"):
+    st.markdown("<div class='back-btn'>", unsafe_allow_html=True)
+    if st.button("⬅ NAZAD NA MENI", key="back_btn"):
         idi_na('pocetna')
     st.markdown("</div>", unsafe_allow_html=True)
-    st.write("---")
 
-    # 1. ŠEĆER (Brix -> Babo/Oechsle)
-    if st.session_state.stranica == 'secer':
-        st.subheader("🍇 Analiza komine")
-        brix = st.number_input("Šećer u komini (% Brix):", value=18.0, step=0.1)
-        st.info(f"**Babo:** {brix*0.85:.1f}° | **Oechsle:** {brix*4.25:.0f}°")
-        st.success(f"**Potencijalni alkohol:** {brix*0.55:.1f}% vol")
+    # 1. KOMINA
+    if st.session_state.stranica == 'komina':
+        st.markdown(f"<h2 style='color:{get_gold()};'>🍇 ANALIZA KOMINE</h2>", unsafe_allow_html=True)
+        st.write("*Brix meri šećer. Babo i Oechsle mere gustinu šire.*")
+        u = st.number_input("Šećer u komini (% Brix)", value=18.0)
+        if st.button("IZRAČUNAJ", key="calc_komina"):
+            b = u
+            st.info(f"Babo: {b*0.85:.1f}° | Oechsle: {b*4.25:.0f}°\n\nPotencijalni alkohol: {b*0.55:.1f}% vol")
 
     # 2. KVASCI
     elif st.session_state.stranica == 'kvasci':
-        st.subheader("🦠 Kvasci i Enzimi")
-        kg = st.number_input("Količina voća (kg):", value=100)
-        st.warning(f"**Receptura:**\n- Enzim: {(kg/100)*2:.1f}g\n- Kvasac: {(kg/100)*25:.1f}g\n- Hrana: {(kg/100)*25:.1f}g")
+        st.markdown(f"<h2 style='color:{get_gold()};'>🦠 KVASCI I ENZIMI</h2>", unsafe_allow_html=True)
+        st.write("*Enzimi, kvasci i hrana osiguravaju čisto vrenje.*")
+        u = st.number_input("Količina voća (kg)", value=100)
+        if st.button("IZRAČUNAJ", key="calc_kvasci"):
+            k = u
+            st.info(f"Enzim: {(k/100)*2:.1f}g\n\nKvasac: {(k/100)*25:.1f}g\n\nHrana: {(k/100)*25:.1f}g")
 
     # 3. PRVENAC
     elif st.session_state.stranica == 'prvenac':
-        st.subheader("✂️ Odvajanje prvenca")
-        v = st.selectbox("Voće:", ["Šljiva (1%)", "Dunja (1.5%)", "Ostalo (1.2%)"])
-        l = st.number_input("Meka rakija (L):", value=100)
-        p = 0.015 if "Dunja" in v else (0.012 if "Ostalo" in v else 0.01)
-        st.error(f"**ODVOJITI PRVENCA: {l*p:.2f} L**")
+        st.markdown(f"<h2 style='color:{get_gold()};'>✂️ PRVENAC</h2>", unsafe_allow_html=True)
+        st.write("*Odvajanje metila na početku prepeka.*")
+        v = st.selectbox("Voće", ["Šljiva (1%)", "Dunja (1.5%)", "Ostalo (1.2%)"])
+        u = st.number_input("Meka rakija (L)", value=100)
+        if st.button("IZRAČUNAJ", key="calc_prvenac"):
+            p = 0.015 if "Dunja" in v else (0.012 if "Ostalo" in v else 0.01)
+            st.error(f"ODVOJITI: {u*p:.2f} L")
 
-    # 4. PATOKA
-    elif st.session_state.stranica == 'patoka':
-        st.subheader("🏁 Presek: Odvajanje Patoke")
-        voce = st.selectbox("Vrsta voća:", ["Šljiva", "Kajsija / Breskva", "Dunja", "Jabuka / Kruška", "Grožđe"])
-        savet = {"Šljiva": "40-45% na luli", "Kajsija / Breskva": "45-50% na luli", "Dunja": "45-50% na luli", "Jabuka / Kruška": "40-42% na luli", "Grožđe": "35-40% na luli"}
-        st.error(f"Kada jačina **NA LULI** padne na: **{savet[voce]}**")
-
-    # 5. RAZBLAŽIVANJE
+    # 4. RAZBLAŽIVANJE
     elif st.session_state.stranica == 'razblazivanje':
-        st.subheader("💧 Razblaživanje")
-        v_r = st.number_input("Litraža rakije (L):", value=10.0)
-        j1 = st.number_input("Trenutna jačina (%):", value=65.0)
-        j2 = st.number_input("Željena jačina (%):", value=42.0)
-        if j1 > j2:
-            voda = v_r * (j1 / j2 - 1)
-            st.success(f"**DODATI DESTILOVANE VODE: {voda:.2f} L**")
+        st.markdown(f"<h2 style='color:{get_gold()};'>💧 RAZBLAŽIVANJE</h2>", unsafe_allow_html=True)
+        st.write("*Postepeno dodavanje destilovane vode u rakiju.*")
+        v = st.number_input("Litraža (L)", value=10.0)
+        j1 = st.number_input("Trenutna %", value=65.0)
+        j2 = st.number_input("Željena %", value=42.0)
+        if st.button("IZRAČUNAJ", key="calc_razblaz"):
+            vd = v * (j1/j2 - 1)
+            st.success(f"DODATI VODE: {vd:.2f} L")
 
-    # 6. TEMPERATURA
+    # 5. TEMPERATURA
     elif st.session_state.stranica == 'temperatura':
-        st.subheader("🌡️ Korekcija temperature")
-        j_izm = st.number_input("Očitana jačina %:", value=45.0)
-        t_izm = st.number_input("Temperatura destilata °C:", value=15.0)
-        stvarna = j_izm + (20 - t_izm) * 0.3
-        st.warning(f"**Stvarna jačina (na 20°C): {stvarna:.1f}% vol**")
+        st.markdown(f"<h2 style='color:{get_gold()};'>🌡️ TEMPERATURA</h2>", unsafe_allow_html=True)
+        st.write("*Korekcija očitane jačine na standardnih 20°C.*")
+        j = st.number_input("Jačina %", value=45.0)
+        t = st.number_input("Temp °C", value=15.0)
+        if st.button("IZRAČUNAJ", key="calc_temp"):
+            s = j + (20 - t) * 0.3
+            st.warning(f"STVARNA JAČINA: {s:.1f}%")
+
+    # 6. PATOKA
+    elif st.session_state.stranica == 'patoka':
+        st.markdown(f"<h2 style='color:{get_gold()};'>🏁 PATOKA</h2>", unsafe_allow_html=True)
+        st.write("*Trenutak kada se prekida hvatanje srca rakije.*")
+        v = st.selectbox("Voće", ["Šljiva", "Dunja", "Jabuka"])
+        if st.button("SAVET", key="calc_patoka"):
+            s = {"Šljiva": "Prekidaj na 40-45% na luli.", "Dunja": "Prekidaj na 45-50% na luli.", "Jabuka": "Prekidaj na oko 42%."}
+            st.info(s[v])
 
     # 7. KUPAŽA
     elif st.session_state.stranica == 'kupaza':
-        st.subheader("⚖️ Kupažiranje")
-        v1, j1 = st.number_input("Rakija 1 (L):", value=10.0), st.number_input("Jačina 1 (%):", value=60.0)
-        v2, j2 = st.number_input("Rakija 2 (L):", value=5.0), st.number_input("Jačina 2 (%):", value=40.0)
-        if (v1 + v2) > 0:
-            nova = (v1 * j1 + v2 * j2) / (v1 + v2)
-            st.success(f"**Ukupno: {v1+v2}L | Jačina kupaže: {nova:.1f}%**")
+        st.markdown(f"<h2 style='color:{get_gold()};'>⚖️ KUPAŽA</h2>", unsafe_allow_html=True)
+        st.write("*Mešanje dve različite rakije radi ujednačavanja.*")
+        c1, c2 = st.columns(2)
+        with c1:
+            v1 = st.number_input("L1 (Litri)", value=10.0)
+            j1 = st.number_input("Jačina 1 (%)", value=60.0)
+        with c2:
+            v2 = st.number_input("L2 (Litri)", value=5.0)
+            j2 = st.number_input("Jačina 2 (%)", value=40.0)
+        if st.button("IZRAČUNAJ", key="calc_kupaza"):
+            uk = v1 + v2
+            n = (v1*j1 + v2*j2) / uk
+            st.success(f"Ukupno: {uk}L | Jačina: {n:.1f}%")
 
     # 8. BURE
     elif st.session_state.stranica == 'bure':
-        st.subheader("🪵 Zapremina bureta")
-        h_b = st.number_input("Visina (cm):", value=70.0)
-        ds_b = st.number_input("Prečnik sredina (cm):", value=60.0)
-        dk_b = st.number_input("Prečnik dno (cm):", value=50.0)
-        zapremina = (math.pi * h_b / 12 * (2 * ds_b**2 + dk_b**2)) / 1000
-        st.success(f"**Zapremina: oko {zapremina:.1f} Litara**")
+        st.markdown(f"<h2 style='color:{get_gold()};'>🪵 BURE</h2>", unsafe_allow_html=True)
+        st.write("*Proračun zapremine drvenog bureta.*")
+        h = st.number_input("Visina (cm)", value=70.0)
+        ds = st.number_input("Sredina (cm)", value=60.0)
+        dk = st.number_input("Dno (cm)", value=50.0)
+        if st.button("IZRAČUNAJ", key="calc_bure"):
+            vol = (math.pi * h / 12 * (2 * ds**2 + dk**2)) / 1000
+            st.info(f"Zapremina: oko {vol:.1f} L")
 
     # 9. DNEVNIK
     elif st.session_state.stranica == 'dnevnik':
-        st.subheader("📖 Digitalni Dnevnik")
-        with st.expander("➕ Dodaj novi unos", expanded=True):
-            f_ime = st.text_input("Voće", "Šljiva")
-            f_god = st.text_input("Godina", "2024")
-            f_kg = st.number_input("Količina (kg)", value=500)
-            f_lit = st.number_input("Dobijeno litara", value=50)
-            f_jac = st.number_input("Jačina (%)", value=42)
-            if st.button("💾 SAČUVAJ U ARHIVU"):
-                st.session_state.dnevnik.append({
-                    "ime": f_ime, "godina": f_god, "kg": f_kg, 
-                    "litara": f_lit, "jacina": f_jac, 
-                    "datum": datetime.now().strftime("%d.%m")
-                })
-                st.success("Uspešno sačuvano!")
+        st.markdown(f"<h2 style='color:{get_gold()};'>📖 DNEVNIK RADA</h2>", unsafe_allow_html=True)
+        f_ime = st.text_input("Voće", "Šljiva")
+        f_god = st.text_input("Godina", "2024")
+        c1, c2 = st.columns(2)
+        with c1:
+            f_kg = st.number_input("Kg", value=500)
+            f_lit = st.number_input("Litri", value=50)
+        with c2:
+            f_dat = st.text_input("Datum", datetime.now().strftime("%d.%m"))
+            f_jac = st.number_input("Jačina %", value=42)
         
-        for s in reversed(st.session_state.dnevnik):
+        if st.button("SAČUVAJ U ARHIVU", key="save_dnevnik"):
+            st.session_state.dnevnik.append({"ime": f_ime, "godina": f_god, "kg": f_kg, "datum": f_dat, "litara": f_lit, "jacina": f_jac})
+            st.success("Sačuvano!")
+
+        st.write("---")
+        for i, s in enumerate(reversed(st.session_state.dnevnik)):
             st.markdown(f"""
-            <div style='background-color:#1e1e1e; padding:15px; border-radius:12px; margin-bottom:10px; border-left:5px solid #D4AF37;'>
-                <strong style='color:#D4AF37;'>{s['ime']} ({s['godina']})</strong><br>
-                {s['kg']}kg | {s['litara']}L | {s['jacina']}% | {s['datum']}
+            <div style='background-color:{get_card()}; padding:15px; border-radius:15px; margin-bottom:10px; border:1px solid {get_gold()};'>
+                <strong style='color:{get_gold()};'>{s['ime']} ({s['godina']})</strong><br>
+                {s['kg']}kg | {s['datum']} | {s['litara']}L | {s['jacina']}%
             </div>
             """, unsafe_allow_html=True)
 
     # 10. LINKOVI
     elif st.session_state.stranica == 'linkovi':
-        st.subheader("🔗 Korisni Linkovi")
-        st.markdown("[📘 Knjiga: Rakijski kod](https://www.facebook.com/rakijskikod/)")
-        st.markdown("[🥂 Rakija iz rakije](https://www.rakijaizrakije.com)")
-        st.markdown("[🤝 Savez proizvođača rakija](https://savezrakija.rs)")
-        st.divider()
-        st.write("**📅 DOGAĐAJI:**")
-        st.write("18.04.2024. Prvi Hajdučki festival rakije - Bogatić")
+        st.markdown(f"<h2 style='color:{get_gold()};'>🔗 KORISNI LINKOVI</h2>", unsafe_allow_html=True)
+        st.write("*Preporučeni sajtovi, prodavnice i udruženja.*")
+        
+        def link_box(t, url):
+            st.markdown(f"""
+                <a href="{url}" target="_blank" style="text-decoration:none;">
+                    <div style="background-color:{get_gold()}; color:black; padding:15px; border-radius:10px; text-align:center; font-weight:bold; margin-bottom:10px;">
+                        {t}
+                    </div>
+                </a>
+            """, unsafe_allow_html=True)
 
-st.markdown("<br><p style='text-align: center; color: #555; font-size:12px;'>Cloud015 © 2026</p>", unsafe_allow_html=True)
+        link_box("📘 Knjiga: Rakijski kod", "https://www.facebook.com/rakijskikod/?locale=sr_RS")
+        link_box("🥂 Rakija iz rakije", "https://www.rakijaizrakije.com")
+        link_box("🤝 Savez proizvođača rakija", "https://savezrakija.rs")
+        link_box("🛒 Rakija Shop", "https://rakijashop.eu/srb/")
+        link_box("🏺 Čiča Zlajina Rakija", "https://cicazlajinarakija.rs")
+        
+        st.write("---")
+        st.markdown(f"<h3 style='color:{get_gold()};'>📅 DOGAĐAJI</h3>", unsafe_allow_html=True)
+        st.info("**18.04.2024. Prvi Hajdučki festival rakije**\n\nLokacija: Mike Vitomirovića 3, Bogatić")
+
+st.markdown(f"<br><p style='text-align: center; color: #555; font-size:10px; margin-top:50px;'>Cloud015 © 2026</p>", unsafe_allow_html=True)
+
