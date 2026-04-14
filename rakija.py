@@ -49,10 +49,19 @@ else:
 # --- 4. BEZBEDAN CSS ZA STREAMLIT CLOUD ---
 st.markdown(f"""
     <style>
-    /* Sakrivanje Streamlit UI elemenata (Header, Footer, Menu) */
+    /* =========================================
+       SAKRIVANJE SVIH STREAMLIT IKONICA I MENIJA
+       ========================================= */
     #MainMenu {{visibility: hidden;}}
-    header {{visibility: hidden;}}
-    footer {{visibility: hidden;}}
+    header {{visibility: hidden !important; display: none !important;}}
+    footer {{visibility: hidden !important; display: none !important;}}
+    
+    /* Sakrivanje Deploy dugmeta i Toolbar-a (tri tačkice) */[data-testid="stToolbar"] {{display: none !important; visibility: hidden !important;}}[data-testid="stDeployButton"] {{display: none !important; visibility: hidden !important;}}
+    
+    /* Sakrivanje "Manage App" bedža koji Streamlit Cloud ubacuje dole desno */
+    .viewerBadge_container__1QSob {{display: none !important;}}
+    .viewerBadge_link__1S137 {{display: none !important;}}
+    div[class^="viewerBadge"] {{display: none !important;}}
     
     /* Globalno */
     .stApp {{ background-color: {BG}; color: {TXT}; }}
