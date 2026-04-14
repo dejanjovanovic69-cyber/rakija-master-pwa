@@ -3,6 +3,3 @@ toolbarMode = "minimal"
 
 [ui]
 hideTopBar = true
-
-[server]
-headless = true
