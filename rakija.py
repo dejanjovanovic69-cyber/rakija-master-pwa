@@ -50,62 +50,28 @@ else:
 st.markdown(f"""
     <style>
     /* =========================================
-       NUKLEARNA OPCIJA ZA BRISANJE SVIH IKONICA
+       ULTIMATIVNO BRISANJE STREAMLIT IKONICA
        ========================================= */
     
-    /* 1. Sakrivanje celog gornjeg menija i headera */
-    header[data-testid="stHeader"] {{
-        display: none !important;
-        height: 0 !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-    }}
+    /* 1. Gornji desni ugao (Deploy, GitHub, tri tačkice) */
+    [data-testid="stHeader"] {{ display: none !important; }}
+    [data-testid="stToolbar"] {{ display: none !important; }}
+    header {{ display: none !important; }}
     
-    /* 2. Sakrivanje Toolbar-a (Deploy, GitHub, tri tačkice) */
-    [data-testid="stToolbar"] {{
-        display: none !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
+    /* 2. Donji desni ugao ("Manage app" i Streamlit logo) - NAJNOVIJI STREAMLIT KOD */
+    iframe[title="Manage app"] {{ 
+        display: none !important; 
+        opacity: 0 !important; 
+        pointer-events: none !important; 
+        position: absolute !important; 
+        top: -9999px !important; 
     }}
-    .stDeployButton, .stAppDeployButton {{
-        display: none !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-    }}
+    iframe[src*="manage"] {{ display: none !important; }}
+    div[class*="viewerBadge"] {{ display: none !important; }}
     
-    /* 3. Sakrivanje "Manage App" i "Hosted with Streamlit" bedževa dole desno */[class*="viewerBadge"] {{
-        display: none !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-    }}[data-testid="manage-app-button"] {{
-        display: none !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-    }}
-    /* Sakrij sve linkove koji vode na Streamlit (ovo ubija Manage App dugme 100%) */
-    a[href*="streamlit"] {{
-        display: none !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-    }}
-    /* Sakrij ifremove koji služe kao bedževi */
-    iframe[src*="badge"], iframe[title*="Streamlit"] {{
-        display: none !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-    }}
-    
-    /* 4. Sakrivanje footera */
-    [data-testid="stFooter"] {{
-        display: none !important;
-    }}
-    footer {{
-        display: none !important;
-    }}
-    
-    /* 5. Sakrivanje dekorativne linije na vrhu */[data-testid="stDecoration"] {{
-        display: none !important;
-    }}
+    /* 3. Sakrivanje footera */
+    [data-testid="stFooter"] {{ display: none !important; }}
+    footer {{ display: none !important; }}
 
     /* Globalno */
     .stApp {{ background-color: {BG}; color: {TXT}; }}
