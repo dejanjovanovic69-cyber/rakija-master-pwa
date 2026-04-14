@@ -54,10 +54,10 @@ else:
     TXT = "black"
     CARD = "white"
 
-# --- 4. POBOLJŠANI CSS - BOLJE UKLANJANJE BADGE-OVA ---
+# --- 4. NAJJAČI CSS ZA UKLANJANJE BADGE-OVA ---
 st.markdown(f"""
 <style>
-    /* === POTPUNO UKLANJANJE STREAMLIT BADGE-OVA === */
+    /* === POTPUNO UKLANJANJE SVIH STREAMLIT BADGE-OVA I WIDGETA === */
     [data-testid="stHeader"],
     [data-testid="stToolbar"],
     [data-testid="stAppDeployButton"],
@@ -67,30 +67,37 @@ st.markdown(f"""
     footer,
     [data-testid="stFooter"],
     #MainMenu,
-    [data-testid="stDecoration"] {{
+    [data-testid="stDecoration"],
+    button[title="View app in new tab"],
+    .st-emotion-cache-1r4qjyz,
+    .st-emotion-cache-13ln4jf,
+    .st-emotion-cache-1g8v9l4,
+    [data-testid="stAppViewContainer"] > div:first-child > div:nth-child(2) {{
         display: none !important;
         visibility: hidden !important;
         height: 0 !important;
         min-height: 0 !important;
+        max-height: 0 !important;
+        overflow: hidden !important;
         margin: 0 !important;
         padding: 0 !important;
     }}
 
-    /* Dodatno za novije verzije Streamlita */
-    .st-emotion-cache-1r4qjyz,
-    .st-emotion-cache-1g8v9l4,
-    [data-testid="stAppViewContainer"] > div:first-child > div:nth-child(2) {{
+    /* Još jače čišćenje donjeg desnog ugla */
+    div[style*="position: fixed"],
+    div[style*="bottom"],
+    div[style*="right: 0"] {{
         display: none !important;
     }}
 
-    /* Tvoj dizajn */
     .stApp {{
-        background-color: {BG};
-        color: {TXT};
+        background-color: {BG} !important;
+        color: {TXT} !important;
     }}
+
     .block-container {{
-        padding-top: 1rem !important;
-        padding-bottom: 3rem !important;
+        padding-top: 0.8rem !important;
+        padding-bottom: 4rem !important;
         max-width: 520px !important;
     }}
 
@@ -102,7 +109,6 @@ st.markdown(f"""
         border-radius: 20px;
         box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
         margin-bottom: 20px;
-        position: relative;
     }}
     .flet-title {{
         color: white;
@@ -132,30 +138,26 @@ st.markdown(f"""
         height: 52px !important;
     }}
 
-    /* Dugme za brisanje */
     .del-btn div.stButton > button {{
         height: 40px !important;
         border: none !important;
         background: transparent !important;
-        font-size: 20px !important;
     }}
 
-    /* Labele i input polja */
     label p, label div {{
         color: {GOLD} !important;
         font-weight: bold !important;
         font-size: 14px !important;
     }}
+
     div[data-baseweb="input"] > div,
     div[data-baseweb="select"] > div {{
         background-color: {CARD} !important;
         border: 1px solid {GOLD} !important;
         border-radius: 10px !important;
     }}
+
     input, div[data-baseweb="input"] button {{
-        color: {TXT} !important;
-    }}
-    div[data-baseweb="select"] span {{
         color: {TXT} !important;
     }}
 
@@ -182,7 +184,7 @@ def get_base64_img(path):
     return None
 
 # ==========================================
-# --- POČETNA STRANA (DASHBOARD) ---
+# --- POČETNA STRANA ---
 # ==========================================
 if st.session_state.stranica == "pocetna":
     img_b64 = get_base64_img("kazan.png")
@@ -193,7 +195,6 @@ if st.session_state.stranica == "pocetna":
     )
     ikona_teme = "☀️" if st.session_state.theme_mode == "dark" else "🌙"
 
-    # Header
     st.markdown(f"""
         <div class="flet-header">
             <p class="flet-title">RAKIJA MASTER PRO</p>
@@ -201,13 +202,11 @@ if st.session_state.stranica == "pocetna":
         </div>
     """, unsafe_allow_html=True)
 
-    # Dugme za temu
     if st.button(f"{ikona_teme} Promeni temu", use_container_width=True):
         st.session_state.theme_mode = "light" if st.session_state.theme_mode == "dark" else "dark"
         st.rerun()
 
-    # --- GLAVNI MENI ---
-    st.markdown('<p class="section-label">🟢 Ukomljavanje</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-label">🟢 UKOMLJAVANJE</p>', unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     with c1:
         if st.button("🍇 Komina", use_container_width=True):
@@ -216,7 +215,7 @@ if st.session_state.stranica == "pocetna":
         if st.button("🦠 Kvasci", use_container_width=True):
             idi_na("kvasci")
 
-    st.markdown('<p class="section-label">🔥 Destilacija</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-label">🔥 DESTILACIJA</p>', unsafe_allow_html=True)
     c3, c4 = st.columns(2)
     with c3:
         if st.button("✂️ Prvenac", use_container_width=True):
@@ -233,7 +232,7 @@ if st.session_state.stranica == "pocetna":
         if st.button("🌡️ Temperatura", use_container_width=True):
             idi_na("temperatura")
 
-    st.markdown('<p class="section-label">⚖️ Kupaža i odležavanje</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-label">⚖️ KUPAŽA I ODLEŽAVANJE</p>', unsafe_allow_html=True)
     c7, c8 = st.columns(2)
     with c7:
         if st.button("⚖️ Kupaža", use_container_width=True):
@@ -242,7 +241,7 @@ if st.session_state.stranica == "pocetna":
         if st.button("🪵 Bure", use_container_width=True):
             idi_na("bure")
 
-    st.markdown('<p class="section-label">📖 Arhiva i linkovi</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-label">📖 ARHIVA I LINKOVI</p>', unsafe_allow_html=True)
     c9, c10 = st.columns(2)
     with c9:
         if st.button("📖 Dnevnik", use_container_width=True):
@@ -318,15 +317,11 @@ else:
     elif st.session_state.stranica == "kupaza":
         naslov_alata("⚖️ KUPAŽA", "Mešanje dve različite rakije radi ujednačavanja.")
         c1, c2 = st.columns(2)
-        with c1:
-            v1 = st.number_input("L1 (Litri)", value=10.0, step=1.0)
-        with c2:
-            j1 = st.number_input("Jačina 1 (%)", value=60.0, step=1.0)
+        with c1: v1 = st.number_input("L1 (Litri)", value=10.0, step=1.0)
+        with c2: j1 = st.number_input("Jačina 1 (%)", value=60.0, step=1.0)
         c3, c4 = st.columns(2)
-        with c3:
-            v2 = st.number_input("L2 (Litri)", value=5.0, step=1.0)
-        with c4:
-            j2 = st.number_input("Jačina 2 (%)", value=40.0, step=1.0)
+        with c3: v2 = st.number_input("L2 (Litri)", value=5.0, step=1.0)
+        with c4: j2 = st.number_input("Jačina 2 (%)", value=40.0, step=1.0)
         if st.button("IZRAČUNAJ", type="primary", use_container_width=True):
             uk = v1 + v2
             n = (v1*j1 + v2*j2) / uk if uk > 0 else 0
@@ -344,29 +339,19 @@ else:
     elif st.session_state.stranica == "dnevnik":
         naslov_alata("📖 DNEVNIK RADA")
         c1, c2 = st.columns(2)
-        with c1:
-            f_i = st.text_input("Voće", "Šljiva")
-        with c2:
-            f_g = st.text_input("Godina", "2024")
+        with c1: f_i = st.text_input("Voće", "Šljiva")
+        with c2: f_g = st.text_input("Godina", "2024")
         c3, c4 = st.columns(2)
-        with c3:
-            f_k = st.text_input("Kg", "500")
-        with c4:
-            f_dat = st.text_input("Datum", datetime.now().strftime("%d.%m"))
+        with c3: f_k = st.text_input("Kg", "500")
+        with c4: f_dat = st.text_input("Datum", datetime.now().strftime("%d.%m"))
         c5, c6 = st.columns(2)
-        with c5:
-            f_l = st.text_input("Litri", "50")
-        with c6:
-            f_j = st.text_input("Jačina %", "42")
+        with c5: f_l = st.text_input("Litri", "50")
+        with c6: f_j = st.text_input("Jačina %", "42")
         if st.button("SAČUVAJ U ARHIVU", type="primary", use_container_width=True):
             if f_i:
                 st.session_state.dnevnik.append({
-                    "ime": f_i,
-                    "godina": f_g,
-                    "kg": f_k,
-                    "datum": f_dat,
-                    "litara": f_l,
-                    "jacina": f_j
+                    "ime": f_i, "godina": f_g, "kg": f_k,
+                    "datum": f_dat, "litara": f_l, "jacina": f_j
                 })
                 sacuvaj_podatke(st.session_state.dnevnik)
                 st.rerun()
@@ -395,7 +380,8 @@ else:
         def link_dugme(tekst, ikona, url):
             st.markdown(f'''
             <a href="{url}" target="_blank" style="text-decoration:none;">
-                <div style="background-color:{GOLD}; color:black; padding:15px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px; font-weight:bold;">
+                <div style="background-color:{GOLD}; color:black; padding:15px; border-radius:10px; 
+                display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px; font-weight:bold;">
                     <span style="font-size:24px;">{ikona}</span>
                     <span style="font-size:16px;">{tekst}</span>
                 </div>
