@@ -54,151 +54,119 @@ else:
     TXT = "black"
     CARD = "white"
 
-# --- 4. CSS (ISPRAVLJEN / STABILNIJI) ---
+# --- 4. POBOLJŠANI CSS - BOLJE UKLANJANJE BADGE-OVA ---
 st.markdown(f"""
 <style>
-/* =========================================================
-   STREAMLIT UI (ikonice, toolbar, status, deploy, footer)
-   ========================================================= */
+    /* === POTPUNO UKLANJANJE STREAMLIT BADGE-OVA === */
+    [data-testid="stHeader"],
+    [data-testid="stToolbar"],
+    [data-testid="stAppDeployButton"],
+    .stDeployButton,
+    .stAppDeployButton,
+    [data-testid="stStatusWidget"],
+    footer,
+    [data-testid="stFooter"],
+    #MainMenu,
+    [data-testid="stDecoration"] {{
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }}
 
-/* Top bar / toolbar / deploy dugmad */
-[data-testid="stHeader"],
-[data-testid="stToolbar"],
-.stDeployButton,
-.stAppDeployButton,
-[data-testid="stAppDeployButton"] {{
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-}}
+    /* Dodatno za novije verzije Streamlita */
+    .st-emotion-cache-1r4qjyz,
+    .st-emotion-cache-1g8v9l4,
+    [data-testid="stAppViewContainer"] > div:first-child > div:nth-child(2) {{
+        display: none !important;
+    }}
 
-/* Running/Stop status widget (često je "dole desno") */
-[data-testid="stStatusWidget"] {{
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-}}
+    /* Tvoj dizajn */
+    .stApp {{
+        background-color: {BG};
+        color: {TXT};
+    }}
+    .block-container {{
+        padding-top: 1rem !important;
+        padding-bottom: 3rem !important;
+        max-width: 520px !important;
+    }}
 
-/* Footer */
-footer,
-[data-testid="stFooter"] {{
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-}}
+    /* Flet Header */
+    .flet-header {{
+        background-color: {GOLD};
+        padding: 20px;
+        text-align: center;
+        border-radius: 20px;
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+        margin-bottom: 20px;
+        position: relative;
+    }}
+    .flet-title {{
+        color: white;
+        font-size: 24px;
+        font-weight: 900;
+        margin: 0;
+    }}
 
-/* Stari glavni meni (nekad se pojavi u nekim režimima) */
-#MainMenu {{
-    visibility: hidden !important;
-}}
+    /* Dugmad */
+    div.stButton > button {{
+        background-color: {CARD} !important;
+        color: {GOLD} !important;
+        border: 1px solid {GOLD} !important;
+        border-radius: 15px !important;
+        height: 80px !important;
+        font-weight: bold !important;
+        font-size: 16px !important;
+        transition: 0.3s;
+    }}
+    div.stButton > button:hover {{
+        background-color: {GOLD} !important;
+        color: {BG} !important;
+    }}
+    div.stButton > button[data-testid="baseButton-primary"] {{
+        background-color: {GOLD} !important;
+        color: black !important;
+        height: 52px !important;
+    }}
 
-/* =========================================================
-   TVOJ THEME / UI STIL
-   ========================================================= */
+    /* Dugme za brisanje */
+    .del-btn div.stButton > button {{
+        height: 40px !important;
+        border: none !important;
+        background: transparent !important;
+        font-size: 20px !important;
+    }}
 
-.stApp {{
-    background-color: {BG};
-    color: {TXT};
-}}
+    /* Labele i input polja */
+    label p, label div {{
+        color: {GOLD} !important;
+        font-weight: bold !important;
+        font-size: 14px !important;
+    }}
+    div[data-baseweb="input"] > div,
+    div[data-baseweb="select"] > div {{
+        background-color: {CARD} !important;
+        border: 1px solid {GOLD} !important;
+        border-radius: 10px !important;
+    }}
+    input, div[data-baseweb="input"] button {{
+        color: {TXT} !important;
+    }}
+    div[data-baseweb="select"] span {{
+        color: {TXT} !important;
+    }}
 
-.block-container {{
-    padding-top: 1rem !important;
-    padding-bottom: 3rem !important;
-    max-width: 500px !important;
-}}
-
-/* Flet Header Klon */
-.flet-header {{
-    background-color: {GOLD};
-    padding: 20px;
-    text-align: center;
-    border-radius: 20px;
-    box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
-    margin-bottom: 20px;
-    position: relative;
-}}
-
-.flet-title {{
-    color: white;
-    font-size: 24px;
-    font-weight: 900;
-    margin: 0;
-}}
-
-/* Stilizacija svih dugmića da izgledaju kao kartice */
-div.stButton > button {{
-    background-color: {CARD} !important;
-    color: {GOLD} !important;
-    border: 1px solid {GOLD} !important;
-    border-radius: 15px !important;
-    height: 80px !important;
-    font-weight: bold !important;
-    font-size: 16px !important;
-    transition: 0.3s;
-}}
-
-div.stButton > button:hover {{
-    background-color: {GOLD} !important;
-    color: {BG} !important;
-}}
-
-/* Primarna dugmad (Izračunaj, Sačuvaj) */
-div.stButton > button[data-testid="baseButton-primary"] {{
-    background-color: {GOLD} !important;
-    color: black !important;
-    height: 50px !important;
-}}
-
-/* Dugme za brisanje iz dnevnika */
-.del-btn div.stButton > button {{
-    height: 40px !important;
-    border: none !important;
-    background: transparent !important;
-    font-size: 20px !important;
-}}
-
-/* Naslovi sekcija */
-.section-label {{
-    color: {GOLD};
-    font-size: 14px;
-    font-weight: bold;
-    margin-top: 20px;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-}}
-
-/* =========================================
-   POPRAVKA ZA POLJA ZA UNOS I TEKST IZNAD NJIH
-   ========================================= */
-
-/* Boja teksta iznad polja (Labele) */
-label p, label div {{
-    color: {GOLD} !important;
-    font-weight: bold !important;
-    font-size: 14px !important;
-}}
-
-/* Pozadina i ivice samog polja za unos */
-div[data-baseweb="input"] > div,
-div[data-baseweb="select"] > div {{
-    background-color: {CARD} !important;
-    border: 1px solid {GOLD} !important;
-    border-radius: 10px !important;
-}}
-
-/* Tekst unutar polja za unos i plus/minus dugmići */
-input, div[data-baseweb="input"] button {{
-    color: {TXT} !important;
-    background-color: transparent !important;
-}}
-
-/* Tekst u padajućem meniju (Selectbox) */
-div[data-baseweb="select"] span {{
-    color: {TXT} !important;
-}}
+    .section-label {{
+        color: {GOLD};
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: 20px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -217,16 +185,12 @@ def get_base64_img(path):
 # --- POČETNA STRANA (DASHBOARD) ---
 # ==========================================
 if st.session_state.stranica == "pocetna":
-
     img_b64 = get_base64_img("kazan.png")
-
-    # POPRAVKA: ovde mora biti <img> tag, ne samo "data:image..."
     slika_html = (
         f'<img src="data:image/png;base64,{img_b64}" width="120" style="margin-top:10px;" />'
         if img_b64
         else '<div style="font-size:60px;">⚗️</div>'
     )
-
     ikona_teme = "☀️" if st.session_state.theme_mode == "dark" else "🌙"
 
     # Header
@@ -291,7 +255,6 @@ if st.session_state.stranica == "pocetna":
 # --- STRANICE ALATA ---
 # ==========================================
 else:
-
     def naslov_alata(tekst, podnaslov=""):
         st.markdown(
             f"<h2 style='color:{GOLD}; font-size:24px; font-weight:bold; margin-bottom: 0px;'>{tekst}</h2>",
@@ -385,19 +348,16 @@ else:
             f_i = st.text_input("Voće", "Šljiva")
         with c2:
             f_g = st.text_input("Godina", "2024")
-
         c3, c4 = st.columns(2)
         with c3:
             f_k = st.text_input("Kg", "500")
         with c4:
             f_dat = st.text_input("Datum", datetime.now().strftime("%d.%m"))
-
         c5, c6 = st.columns(2)
         with c5:
             f_l = st.text_input("Litri", "50")
         with c6:
             f_j = st.text_input("Jačina %", "42")
-
         if st.button("SAČUVAJ U ARHIVU", type="primary", use_container_width=True):
             if f_i:
                 st.session_state.dnevnik.append({
@@ -410,9 +370,7 @@ else:
                 })
                 sacuvaj_podatke(st.session_state.dnevnik)
                 st.rerun()
-
         st.divider()
-
         for i, s in enumerate(reversed(st.session_state.dnevnik)):
             idx = len(st.session_state.dnevnik) - 1 - i
             rc1, rc2 = st.columns([8, 2])
@@ -434,7 +392,6 @@ else:
 
     elif st.session_state.stranica == "linkovi":
         naslov_alata("🔗 KORISNI LINKOVI", "Preporučeni sajtovi, prodavnice i udruženja.")
-
         def link_dugme(tekst, ikona, url):
             st.markdown(f'''
             <a href="{url}" target="_blank" style="text-decoration:none;">
@@ -444,16 +401,13 @@ else:
                 </div>
             </a>
             ''', unsafe_allow_html=True)
-
         link_dugme("Knjiga: Rakijski kod", "📘", "https://www.facebook.com/rakijskikod/?locale=sr_RS")
         link_dugme("Rakija iz rakije", "🥂", "https://www.rakijaizrakije.com")
         link_dugme("Savez proizvođača rakija", "🤝", "https://savezrakija.rs")
         link_dugme("Rakija Shop", "🛒", "https://rakijashop.eu/srb/")
         link_dugme("Čiča Zlajina Rakija", "🏺", "https://cicazlajinarakija.rs")
-
         st.divider()
         st.markdown(f"<p style='color:{GOLD}; font-size:18px; font-weight:bold;'>📅 DOGAĐAJI</p>", unsafe_allow_html=True)
-
         link_dugme("18.04.2024. Hajdučki festival", "📍", "https://www.facebook.com/p/Хајдучки-фестивал-ракије-Богатић-Hajdučki-festival-rakije-Bogatić-61584019897579/")
 
     st.divider()
