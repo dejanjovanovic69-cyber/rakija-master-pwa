@@ -13,16 +13,21 @@ if 'stranica' not in st.session_state:
 if 'dnevnik' not in st.session_state:
     st.session_state.dnevnik =[]
 
-# --- BRUTALAN CSS ZA ANDROID IZGLED ---
+# --- BRUTALAN CSS ZA ANDROID IZGLED (SA TEŠKOM ARTILJERIJOM ZA STREAMLIT) ---
 st.markdown("""
     <style>
     /* TOTALNO SAKRIVANJE STREAMLIT BRENDINGA I MENIJA */
-    #MainMenu {visibility: hidden; display: none !important;}
-    header {visibility: hidden; display: none !important;}
-    footer {visibility: hidden; display: none !important;}
-    [data-testid="stHeader"] {display: none !important;}
-    [data-testid="stFooter"] {display: none !important;}[data-testid="stToolbar"] {display: none !important;}
+    #MainMenu {visibility: hidden !important; display: none !important;}
+    header {visibility: hidden !important; display: none !important;}
+    [data-testid="stHeader"] {display: none !important;}[data-testid="stToolbar"] {display: none !important;}
+
+    /* SAKRIVANJE STREAMLIT FOOTER-A I BEDŽEVA NA DNU */
+    footer {visibility: hidden !important; display: none !important;}
+    [data-testid="stFooter"] {display: none !important;}
     .viewerBadge_container__1QSob {display: none !important;}
+    .st-emotion-cache-1cvow4s {display: none !important;} 
+    div[data-testid="manage-app-button"] {display: none !important;}
+    a[href^="https://streamlit.io"] {display: none !important; opacity: 0 !important; pointer-events: none !important;}
     
     /* Margine ekrana */
     .block-container { padding-top: 1rem; padding-bottom: 5rem; }
@@ -40,7 +45,7 @@ st.markdown("""
         box-shadow: 0px 5px 15px rgba(0,0,0,0.5);
     }
     
-    /* Dizajn dugmića da izgledaju kao Android kartice */
+    /* Dizajn dugmića */
     div[data-testid="stButton"] > button {
         background: linear-gradient(145deg, #1e1e1e, #2a2a2a) !important;
         color: #D4AF37 !important;
@@ -58,7 +63,7 @@ st.markdown("""
         color: #121212 !important;
     }
     
-    /* Dugme za NAZAD (manje i drugačije boje) */
+    /* Dugme za NAZAD */
     .btn-nazad div[data-testid="stButton"] > button {
         height: 50px !important;
         background: transparent !important;
@@ -67,7 +72,6 @@ st.markdown("""
         font-size: 14px !important;
     }
 
-    /* Akcentne boje za labele i slidere */
     label, .stMarkdown p { color: #eeeeee !important; }
     div[data-baseweb="slider"] { margin-bottom: 20px; }
     
@@ -120,7 +124,6 @@ if st.session_state.stranica == 'pocetna':
     with c2:
         if st.button("🦠 Kvasci", use_container_width=True): idi_na('kvasci')
 
-    # DODATA PATOKA U MENI! (3 dugmeta sa leve, 2 sa desne strane)
     st.markdown("<p style='color:#D4AF37; font-weight:bold; margin-top:15px; margin-bottom:5px;'>🔥 DESTILACIJA</p>", unsafe_allow_html=True)
     c3, c4 = st.columns(2)
     with c3:
@@ -181,16 +184,18 @@ else:
         voce = st.selectbox("Vrsta voća:",["Šljiva", "Kajsija / Breskva", "Dunja", "Jabuka / Kruška", "Grožđe (Loza)", "Ostalo"])
         meka = st.number_input("Meka rakija u kazanu (L):", min_value=1.0, value=100.0, step=5.0)
         
-        # Dunja i Kajsija imaju najviše pektina
-        if voce in["Kajsija / Breskva", "Dunja"]: proc = 0.015
-        elif voce == "Šljiva": proc = 0.008
-        else: proc = 0.010
+        if voce in["Kajsija / Breskva", "Dunja"]: 
+            proc = 0.015
+        elif voce == "Šljiva": 
+            proc = 0.008
+        else: 
+            proc = 0.010
         
         prvenac = meka * proc
         st.error(f"Preporučeno za odvajanje: **{prvenac:.2f} Litara** ({proc*100}%)")
         st.caption("Aplikacija daje procenu zasnovanu na prosečnoj količini pektina u voću. Konačan presek uvek radi na miris!")
 
-    # 4. PATOKA (NOVI ALAT!)
+    # 4. PATOKA
     elif st.session_state.stranica == 'patoka':
         st.subheader("🏁 Presek: Odvajanje Patoke")
         st.write("Trenutak kada prestaješ da hvataš srce rakije.")
