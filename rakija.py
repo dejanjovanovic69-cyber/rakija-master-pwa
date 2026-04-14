@@ -20,7 +20,7 @@ def ucitaj_podatke():
     if os.path.exists(FILE_PATH):
         try:
             with open(FILE_PATH, "r", encoding="utf-8") as f: return json.load(f)
-        except: return []
+        except: return[]
     return[]
 
 def sacuvaj_podatke(lista):
@@ -50,18 +50,23 @@ else:
 st.markdown(f"""
     <style>
     /* =========================================
-       SAKRIVANJE SVIH STREAMLIT IKONICA I MENIJA
+       BRISANJE SVIH STREAMLIT IKONICA I MENIJA
        ========================================= */
-    #MainMenu {{visibility: hidden;}}
-    header {{visibility: hidden !important; display: none !important;}}
-    footer {{visibility: hidden !important; display: none !important;}}
     
-    /* Sakrivanje Deploy dugmeta i Toolbar-a (tri tačkice) */[data-testid="stToolbar"] {{display: none !important; visibility: hidden !important;}}[data-testid="stDeployButton"] {{display: none !important; visibility: hidden !important;}}
+    /* 1. Sakrivanje celog gornjeg menija (Deploy, GitHub, tri tačkice) */[data-testid="stHeader"] {{ display: none !important; visibility: hidden !important; }}
+    header {{ display: none !important; visibility: hidden !important; }}
     
-    /* Sakrivanje "Manage App" bedža koji Streamlit Cloud ubacuje dole desno */
-    .viewerBadge_container__1QSob {{display: none !important;}}
-    .viewerBadge_link__1S137 {{display: none !important;}}
-    div[class^="viewerBadge"] {{display: none !important;}}
+    /* 2. Sakrivanje novog lebdećeg toolbara (gore desno) */
+    [data-testid="stToolbar"] {{ display: none !important; visibility: hidden !important; }}
+    
+    /* 3. Sakrivanje "Manage App" bedža (dole desno na Streamlit Cloud-u) */[class^="viewerBadge"] {{ display: none !important; visibility: hidden !important; }}[class*="viewerBadge"] {{ display: none !important; visibility: hidden !important; }}
+    
+    /* 4. Sakrivanje "Made with Streamlit" footera */
+    [data-testid="stFooter"] {{ display: none !important; visibility: hidden !important; }}
+    footer {{ display: none !important; visibility: hidden !important; }}
+    
+    /* 5. Dodatno osiguranje za ifremove koje Streamlit ubacuje */
+    iframe[src*="badge"] {{ display: none !important; }}
     
     /* Globalno */
     .stApp {{ background-color: {BG}; color: {TXT}; }}
