@@ -16,13 +16,21 @@ if 'dnevnik' not in st.session_state:
 # --- BRUTALAN CSS ZA ANDROID IZGLED ---
 st.markdown("""
     <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
+    /* TOTALNO SAKRIVANJE STREAMLIT BRENDINGA I MENIJA */
+    #MainMenu {visibility: hidden; display: none !important;}
+    header {visibility: hidden; display: none !important;}
+    footer {visibility: hidden; display: none !important;}
+    [data-testid="stHeader"] {display: none !important;}
+    [data-testid="stFooter"] {display: none !important;}[data-testid="stToolbar"] {display: none !important;}
+    .viewerBadge_container__1QSob {display: none !important;}
+    
+    /* Margine ekrana */
     .block-container { padding-top: 1rem; padding-bottom: 5rem; }
     
+    /* Tamna tema */
     .stApp { background-color: #121212; color: #ffffff; }
 
+    /* Naslovni blok */
     .header-box {
         text-align: center;
         padding: 40px 10px 20px 10px;
@@ -32,6 +40,7 @@ st.markdown("""
         box-shadow: 0px 5px 15px rgba(0,0,0,0.5);
     }
     
+    /* Dizajn dugmića da izgledaju kao Android kartice */
     div[data-testid="stButton"] > button {
         background: linear-gradient(145deg, #1e1e1e, #2a2a2a) !important;
         color: #D4AF37 !important;
@@ -49,6 +58,7 @@ st.markdown("""
         color: #121212 !important;
     }
     
+    /* Dugme za NAZAD (manje i drugačije boje) */
     .btn-nazad div[data-testid="stButton"] > button {
         height: 50px !important;
         background: transparent !important;
@@ -57,9 +67,11 @@ st.markdown("""
         font-size: 14px !important;
     }
 
+    /* Akcentne boje za labele i slidere */
     label, .stMarkdown p { color: #eeeeee !important; }
     div[data-baseweb="slider"] { margin-bottom: 20px; }
     
+    /* Input polja */
     div[data-baseweb="input"], div[data-baseweb="select"] > div {
         background-color: #1e1e1e !important;
         border-radius: 10px !important;
@@ -170,7 +182,7 @@ else:
         meka = st.number_input("Meka rakija u kazanu (L):", min_value=1.0, value=100.0, step=5.0)
         
         # Dunja i Kajsija imaju najviše pektina
-        if voce in ["Kajsija / Breskva", "Dunja"]: proc = 0.015
+        if voce in["Kajsija / Breskva", "Dunja"]: proc = 0.015
         elif voce == "Šljiva": proc = 0.008
         else: proc = 0.010
         
