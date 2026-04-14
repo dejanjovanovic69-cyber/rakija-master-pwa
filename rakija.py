@@ -50,24 +50,37 @@ else:
 st.markdown(f"""
     <style>
     /* =========================================
-       TOTALNO BRISANJE SVIH STREAMLIT IKONICA
+       HAKERSKO BRISANJE SVIH STREAMLIT IKONICA
        ========================================= */
     
-    /* 1. Sakrivanje celog gornjeg menija (Deploy, GitHub, tri tačkice) */
-    [data-testid="stHeader"] {{ display: none !important; }}
+    /* 1. Brisanje gornjeg menija (Header, Toolbar, Deploy) */
+    header[data-testid="stHeader"] {{ display: none !important; z-index: -9999 !important; }}
+    [data-testid="stToolbar"] {{ display: none !important; z-index: -9999 !important; }}
+    .stDeployButton {{ display: none !important; }}
+    [data-testid="stDecoration"] {{ display: none !important; }}
     
-    /* 2. Sakrivanje ikonice za otvaranje sajd-bara (gore levo) */
-    [data-testid="collapsedControl"] {{ display: none !important; }}
+    /* 2. Brisanje "Manage App" bedža (NUKLEARNA OPCIJA) */
+    /* Streamlit ubacuje bedž kao iframe, ovo ubija sve iframe-ove */
+    iframe {{ 
+        display: none !important; 
+        width: 0 !important; 
+        height: 0 !important; 
+        visibility: hidden !important; 
+    }}
     
-    /* 3. Sakrivanje "Manage App" i "Hosted with Streamlit" bedževa (dole desno) */
-    [class*="viewerBadge"] {{ display: none !important; }}
+    /* Ubija bilo koji element koji je fiksiran u donjem desnom uglu ekrana */
+    div[style*="position: fixed"][style*="bottom"][style*="right"] {{
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        z-index: -9999 !important;
+    }}
     
-    /* 4. BRUTALNA METODA: Sakrivanje apsolutno svakog linka i slike koji vode na Streamlit ili GitHub */
-    a[href*="streamlit"] {{ display: none !important; pointer-events: none !important; visibility: hidden !important; }}
-    img[src*="streamlit"] {{ display: none !important; pointer-events: none !important; visibility: hidden !important; }}
-    a[href*="github.com"] {{ display: none !important; pointer-events: none !important; visibility: hidden !important; }}
+    /* Stare klase za svaki slučaj */[class*="viewerBadge"] {{ display: none !important; }}
+    #ManageAppBadge {{ display: none !important; }}
     
-    /* 5. Sakrivanje footera */[data-testid="stFooter"] {{ display: none !important; }}
+    /* 3. Sakrivanje footera */[data-testid="stFooter"] {{ display: none !important; }}
     footer {{ display: none !important; }}
 
     /* Globalno */
