@@ -20,7 +20,7 @@ def ucitaj_podatke():
     if os.path.exists(FILE_PATH):
         try:
             with open(FILE_PATH, "r", encoding="utf-8") as f: return json.load(f)
-        except: return[]
+        except: return []
     return[]
 
 def sacuvaj_podatke(lista):
@@ -50,24 +50,63 @@ else:
 st.markdown(f"""
     <style>
     /* =========================================
-       BRISANJE SVIH STREAMLIT IKONICA I MENIJA
+       NUKLEARNA OPCIJA ZA BRISANJE SVIH IKONICA
        ========================================= */
     
-    /* 1. Sakrivanje celog gornjeg menija (Deploy, GitHub, tri tačkice) */[data-testid="stHeader"] {{ display: none !important; visibility: hidden !important; }}
-    header {{ display: none !important; visibility: hidden !important; }}
+    /* 1. Sakrivanje celog gornjeg menija i headera */
+    header[data-testid="stHeader"] {{
+        display: none !important;
+        height: 0 !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }}
     
-    /* 2. Sakrivanje novog lebdećeg toolbara (gore desno) */
-    [data-testid="stToolbar"] {{ display: none !important; visibility: hidden !important; }}
+    /* 2. Sakrivanje Toolbar-a (Deploy, GitHub, tri tačkice) */
+    [data-testid="stToolbar"] {{
+        display: none !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }}
+    .stDeployButton, .stAppDeployButton {{
+        display: none !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }}
     
-    /* 3. Sakrivanje "Manage App" bedža (dole desno na Streamlit Cloud-u) */[class^="viewerBadge"] {{ display: none !important; visibility: hidden !important; }}[class*="viewerBadge"] {{ display: none !important; visibility: hidden !important; }}
+    /* 3. Sakrivanje "Manage App" i "Hosted with Streamlit" bedževa dole desno */[class*="viewerBadge"] {{
+        display: none !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }}[data-testid="manage-app-button"] {{
+        display: none !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }}
+    /* Sakrij sve linkove koji vode na Streamlit (ovo ubija Manage App dugme 100%) */
+    a[href*="streamlit"] {{
+        display: none !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }}
+    /* Sakrij ifremove koji služe kao bedževi */
+    iframe[src*="badge"], iframe[title*="Streamlit"] {{
+        display: none !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }}
     
-    /* 4. Sakrivanje "Made with Streamlit" footera */
-    [data-testid="stFooter"] {{ display: none !important; visibility: hidden !important; }}
-    footer {{ display: none !important; visibility: hidden !important; }}
+    /* 4. Sakrivanje footera */
+    [data-testid="stFooter"] {{
+        display: none !important;
+    }}
+    footer {{
+        display: none !important;
+    }}
     
-    /* 5. Dodatno osiguranje za ifremove koje Streamlit ubacuje */
-    iframe[src*="badge"] {{ display: none !important; }}
-    
+    /* 5. Sakrivanje dekorativne linije na vrhu */[data-testid="stDecoration"] {{
+        display: none !important;
+    }}
+
     /* Globalno */
     .stApp {{ background-color: {BG}; color: {TXT}; }}
     .block-container {{ padding-top: 1rem !important; padding-bottom: 3rem !important; max-width: 500px !important; }}
